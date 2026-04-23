@@ -148,6 +148,64 @@ async function mintSelfPay(input: MintInput, session: ZkLoginSession): Promise<s
   return extractCapsuleObjectId(result, session.address);
 }
 
+// ─── Demo mode (no login) ────────────────────────────────────────────────
+
+const DEMO_KEY_STORAGE = 'capsule_demo_privkey';
+const FAUCET_URL =
+  (process.env.NEXT_PUBLIC_SUI_NETWORK ?? 'devnet') === 'testnet'
+    ? 'https://faucet.testnet.sui.io/gas'
+    : 'https://faucet.devnet.sui.io/gas';
+
+function getDemoKeypair(): Ed25519Keypair {
+  if (typeof window === 'undefined') return new Ed25519Keypair();
+  const stored = localStorage.getItem(DEMO_KEY_STORAGE);
+  if (stored) {
+    try {
+      const { secretKey } = decodeSuiPrivateKey(stored);
+      return Ed25519Keypair.fromSecretKey(secretKey);
+    } catch { /* fall through to generate */ }
+  }
+  const kp = new Ed25519Keypair();
+  localStorage.setItem(DEMO_KEY_STORAGE, kp.getSecretKey());
+  return kp;
+}
+
+async function ensureDemoGas(address: string): Promise<void> {
+  const client = getSuiClient();
+  const { totalBalance } = await client.getBalance({ owner: address });
+  if (BigInt(totalBalance) >= BigInt(5_000_000)) return;
+  try {
+    await fetch(FAUCET_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ FixedAmountRequest: { recipient: address } }),
+    });
+    await new Promise(r => setTimeout(r, 3000));
+  } catch {
+    throw new Error('フォーセットからSUIを取得できませんでした。しばらく待ってから再試行してください。');
+  }
+}
+
+export async function mintDemo(input: MintInput): Promise<string> {
+  const client = getSuiClient();
+  const keypair = getDemoKeypair();
+  const address = keypair.getPublicKey().toSuiAddress();
+
+  await ensureDemoGas(address);
+
+  const tx = new Transaction();
+  tx.setSender(address);
+  buildMintCommands(tx, input);
+
+  const result = await client.signAndExecuteTransaction({
+    transaction: tx,
+    signer: keypair,
+    options: { showEffects: true, showObjectChanges: true },
+  });
+
+  return extractCapsuleObjectId(result, address);
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────
 
 /**

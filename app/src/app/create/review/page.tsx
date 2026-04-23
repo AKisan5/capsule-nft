@@ -6,7 +6,7 @@ import { ChevronLeft, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePreMintStore } from '@/stores/preMint';
 import { useAuthStore } from '@/stores/auth';
-import { mintCapsule } from '@/lib/sui/mint';
+import { mintCapsule, mintDemo } from '@/lib/sui/mint';
 import { NETWORK } from '@/lib/sui/client';
 import { cn } from '@/lib/utils';
 
@@ -208,7 +208,7 @@ function HoldToMintButton({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        {disabled ? 'ログインが必要です' : '2 秒間長押しで確定'}
+        2 秒間長押しで確定
       </p>
     </div>
   );
@@ -266,17 +266,13 @@ export default function ReviewPage() {
   // ── ミント処理 ──────────────────────────────────────────────────────────
 
   const handleMint = async () => {
-    if (!session) {
-      toast.error('ログインが必要です', { description: '/login から Google でログインしてください' });
-      return;
-    }
     setMinting(true);
     setMintError(null);
     try {
-      const objectId = await mintCapsule(
-        { photoBlobId, step1, step2, step3, eventName, fighterTag },
-        session,
-      );
+      const mintInput = { photoBlobId, step1, step2, step3, eventName, fighterTag };
+      const objectId = session
+        ? await mintCapsule(mintInput, session)
+        : await mintDemo(mintInput);
       reset();
       router.push(`/capsule/${objectId}`);
     } catch (err) {
@@ -397,13 +393,20 @@ export default function ReviewPage() {
         </div>
       </div>
 
-      {/* ── ガス代表示 ── */}
-      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-        <span className="rounded-full bg-primary/10 px-2.5 py-1 font-medium text-primary text-[11px]">
-          Sponsored
-        </span>
-        <span>ガス代は運営負担です。SUI は不要。</span>
-      </div>
+      {/* ── ガス代 / デモバナー ── */}
+      {session ? (
+        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <span className="rounded-full bg-primary/10 px-2.5 py-1 font-medium text-primary text-[11px]">
+            Sponsored
+          </span>
+          <span>ガス代は運営負担です。SUI は不要。</span>
+        </div>
+      ) : (
+        <div className="flex items-center justify-center gap-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-xs text-yellow-700 dark:text-yellow-400">
+          <span className="font-semibold">デモモード</span>
+          <span>— ログインなしで devnet にミントします</span>
+        </div>
+      )}
 
       {/* ── ミントボタン ── */}
       {minting ? (
@@ -412,7 +415,7 @@ export default function ReviewPage() {
           <p className="text-sm text-muted-foreground">ブロックチェーンに刻んでいます…</p>
         </div>
       ) : (
-        <HoldToMintButton onConfirm={handleMint} disabled={!session} />
+        <HoldToMintButton onConfirm={handleMint} disabled={minting} />
       )}
 
       {/* ── エラー + 再試行 ── */}
