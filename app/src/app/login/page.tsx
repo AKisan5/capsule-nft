@@ -1,0 +1,139 @@
+'use client';
+
+import { useState } from 'react';
+import { buildOAuthUrl } from '@/lib/sui/zklogin';
+import { Button } from '@/components/ui/button';
+
+export default function LoginPage() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleLogin() {
+    setLoading(true);
+    setError(null);
+    try {
+      const url = await buildOAuthUrl();
+      window.location.href = url;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '予期しないエラーが発生しました');
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center px-4">
+      <div className="w-full max-w-sm space-y-8 text-center">
+        {/* ロゴ / キャッチ */}
+        <div className="space-y-3">
+          <h1 className="text-4xl font-bold tracking-tight text-white">
+            Capsule
+          </h1>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            ONE Championship の感動を、あなただけの言葉で永久に刻む
+          </p>
+        </div>
+
+        {/* カプセル金庫のビジュアルヒント */}
+        <div
+          aria-hidden="true"
+          className="mx-auto h-24 w-24 rounded-full bg-gradient-to-br from-purple-600/30 to-indigo-600/20 ring-1 ring-purple-500/30 flex items-center justify-center"
+        >
+          <span className="text-4xl">💊</span>
+        </div>
+
+        {/* ログイン説明 */}
+        <div className="rounded-xl border border-white/8 bg-white/4 p-5 space-y-2 text-left backdrop-blur-sm">
+          <p className="text-sm font-medium text-white">あなたのカプセル金庫を開く</p>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Google アカウントで認証するだけ。
+            ウォレットのインストールや秘密鍵の管理は不要です。
+            あなたのカプセルは Sui ブロックチェーンに永続します。
+          </p>
+        </div>
+
+        {/* Google ログインボタン */}
+        <Button
+          onClick={handleLogin}
+          disabled={loading}
+          className="w-full gap-3 bg-white text-gray-900 hover:bg-gray-100 disabled:opacity-60"
+          size="lg"
+        >
+          {loading ? (
+            <>
+              <Spinner />
+              金庫を準備中...
+            </>
+          ) : (
+            <>
+              <GoogleIcon />
+              Google で金庫を開く
+            </>
+          )}
+        </Button>
+
+        {error && (
+          <p role="alert" className="text-xs text-destructive">
+            {error}
+          </p>
+        )}
+
+        <p className="text-xs text-muted-foreground">
+          ログインすると、あなた専用の Sui アドレスが自動生成されます
+        </p>
+      </div>
+    </main>
+  );
+}
+
+// ─── Inline SVG components ────────────────────────────────────────────────
+
+function GoogleIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+        fill="#4285F4"
+      />
+      <path
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+        fill="#34A853"
+      />
+      <path
+        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+        fill="#FBBC05"
+      />
+      <path
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+        fill="#EA4335"
+      />
+    </svg>
+  );
+}
+
+function Spinner() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="animate-spin"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+      />
+    </svg>
+  );
+}
