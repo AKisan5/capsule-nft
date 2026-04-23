@@ -82,6 +82,21 @@ one-capsule/
 └── docs/               # ドキュメント
 ```
 
+## デプロイ済み環境
+
+| 環境 | URL |
+|------|-----|
+| Production | https://app-akisan5s-projects.vercel.app |
+| GitHub | https://github.com/AKisan5/capsule-nft |
+
+### Sui Devnet コントラクト
+
+| オブジェクト | ID |
+|-------------|-----|
+| Package | `0x45ec9297a4d71f2ffa044546ce008b808185509edec1304dcc8426b4ac4ed037` |
+| FeedbackRegistry | `0xb8718218e89db7f5c237d4eb8286a749cdb7a4ecc14c4b5310773bf117618d1a` |
+| ProfileRegistry | `0xd5bc064232736b917eebed9ddfb0fed3d760815c9ab3fb6974f0ff2b1a577543` |
+
 ## ミント フロー (5 ステップ)
 
 1. **選手選択** — 対戦カードから感動した選手を選ぶ
