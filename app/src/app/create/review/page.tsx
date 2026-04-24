@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, AlertTriangle, Copy, Check, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
