@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,43 @@ import { usePreMintStore } from '@/stores/preMint';
 import { CATEGORIES, getCategoryByValue } from '@/lib/constants/categories';
 import { cn } from '@/lib/utils';
 
+// Map on-chain Japanese values → translation keys (values must stay Japanese for on-chain compat)
+const CATEGORY_KEY: Record<string, string> = {
+  '入場・セレモニー': 'entrance',
+  '試合の展開':       'fight',
+  '結末':             'ending',
+  '試合後':           'afterFight',
+  '違和感・モヤモヤ': 'uneasy',
+};
+
+const SUBCATEGORY_KEY: Record<string, string> = {
+  '入場曲':             'entranceMusic',
+  '表情・佇まい':       'entranceFace',
+  '衣装':               'costume',
+  'コーナーやりとり':   'cornerTalk',
+  'フェイスオフ':       'faceOff',
+  'ラウンド戦略の変化': 'strategyShift',
+  '決定的な技':         'decisiveMove',
+  '耐えた瞬間':         'endurance',
+  'セコンドの声かけ':   'secondVoice',
+  '観客との相互作用':   'crowdInteraction',
+  '勝敗の決まり方':     'outcome',
+  '勝利/敗北の受け止め':'reaction',
+  '相手選手との握手':   'handshake',
+  '判定への反応':       'decision',
+  'インタビュー':       'interview',
+  '家族・セコンドとの抱擁': 'embrace',
+  '敗者の振る舞い':     'loserGrace',
+  '感情の爆発':         'emotionBurst',
+  '納得いかなかった判定': 'unsatisfied',
+  '期待と違った展開':   'unexpected',
+  '理解できなかった演出': 'unclear',
+  'まだ言葉にできない': 'indescribable',
+};
+
 export default function Step1Page() {
+  const t = useTranslations('create.step1');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const { photoBlobId, step1, setStep1 } = usePreMintStore();
 
@@ -43,14 +80,12 @@ export default function Step1Page() {
         className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        戻る
+        {tCommon('back')}
       </button>
 
       <div>
-        <h1 className="text-xl font-bold leading-snug">
-          この写真の、どの瞬間が
-          <br />
-          心を動かされた?
+        <h1 className="text-xl font-bold leading-snug whitespace-pre-line">
+          {t('title')}
         </h1>
       </div>
 
@@ -62,6 +97,7 @@ export default function Step1Page() {
       >
         {CATEGORIES.map((cat) => {
           const active = step1.category === cat.value;
+          const labelKey = CATEGORY_KEY[cat.value];
           return (
             <label
               key={cat.value}
@@ -79,7 +115,7 @@ export default function Step1Page() {
                   active ? 'text-primary' : 'text-foreground',
                 )}
               >
-                {cat.label}
+                {labelKey ? t(`categories.${labelKey}`) : cat.label}
               </span>
             </label>
           );
@@ -90,11 +126,12 @@ export default function Step1Page() {
       {selectedCategory && selectedCategory.subcategories.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            具体的にどの場面? (複数選択可)
+            {t('subcategoryLabel')}
           </p>
           <div className="space-y-1.5">
             {selectedCategory.subcategories.map((sub) => {
               const checked = step1.items.includes(sub);
+              const subKey = SUBCATEGORY_KEY[sub];
               return (
                 <label
                   key={sub}
@@ -109,7 +146,9 @@ export default function Step1Page() {
                     checked={checked}
                     onCheckedChange={() => toggleItem(sub)}
                   />
-                  <span className="text-sm">{sub}</span>
+                  <span className="text-sm">
+                    {subKey ? t(`subcategories.${subKey}`) : sub}
+                  </span>
                 </label>
               );
             })}
@@ -120,18 +159,18 @@ export default function Step1Page() {
       {/* ── 自由記述 ── */}
       <div className="space-y-2">
         <label className="block text-sm font-medium">
-          具体的に何が?{' '}
+          {t('freeTextLabel')}{' '}
           <span className="text-destructive">*</span>
         </label>
         <Textarea
-          placeholder="あのシーンのどこが、なぜ心に刺さったか — 自分の言葉で書いてください"
+          placeholder={t('freeTextPlaceholder')}
           rows={4}
           value={step1.freeText}
           onChange={(e) => setStep1({ freeText: e.target.value })}
           className="resize-none text-sm"
         />
         {!canProceed && step1.freeText !== '' && (
-          <p className="text-xs text-muted-foreground">空白のみは入力とみなされません</p>
+          <p className="text-xs text-muted-foreground">{t('blankWarning')}</p>
         )}
       </div>
 
@@ -141,7 +180,7 @@ export default function Step1Page() {
         disabled={!canProceed}
         onClick={() => router.push('/create/step2')}
       >
-        次へ — 感情を記録
+        {t('nextButton')}
       </Button>
     </div>
   );

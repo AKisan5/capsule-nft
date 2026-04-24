@@ -1,5 +1,31 @@
 # Progress Log
 
+## 2026-04-24 — Phase E3: useTranslations 導入完了
+
+### 更新ファイル
+- `app/src/app/[locale]/page.tsx`
+- `app/src/app/[locale]/login/page.tsx`
+- `app/src/app/[locale]/my/page.tsx`
+- `app/src/app/[locale]/create/photo/page.tsx`
+- `app/src/app/[locale]/create/step1/page.tsx`
+- `app/src/app/[locale]/create/step2/page.tsx`
+- `app/src/app/[locale]/create/step3/page.tsx`
+- `app/src/app/[locale]/create/review/page.tsx`
+- `app/src/app/[locale]/capsule/[id]/CapsuleViewer.tsx`
+- `app/src/app/[locale]/my/capsule/[id]/page.tsx`
+- `app/src/components/ViewerProfileModal.tsx`
+- `app/src/components/create/StepProgress.tsx`
+
+### 対応ポイント
+- on-chain に保存される日本語 value (カテゴリ/感情分類) は変更せず、表示ラベルのみを `t()` に置換
+- `CATEGORY_KEY` / `SUBCATEGORY_KEY` / `POLARITY_KEY` / `SUBCATEGORY_KEY` マッピングテーブルを各コンポーネントに追加
+- recharts `dataKey` を安定した英語キーに変更し、ラベルのみ `t('dashboard.tiers.*')` / `t('dashboard.outcomes.*')` で翻訳
+
+### 確認
+- `pnpm tsc --noEmit` エラーなし
+- 全ルート 200 (/, /ja, /en, /ja/login, /en/login)
+- 残存日本語: on-chain value マッピング / JSX コメント / metadata のみ (UI テキストなし)
+
 ## 2026-04-24 — Phase E2: メッセージカタログ作成完了
 
 ### 作成

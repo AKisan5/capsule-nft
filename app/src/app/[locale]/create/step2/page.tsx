@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,57 +10,24 @@ import { Textarea } from '@/components/ui/textarea';
 import { usePreMintStore } from '@/stores/preMint';
 import { cn } from '@/lib/utils';
 
-// ── 三宅香帆の原則に基づく 4 分類 ──────────────────────────────────────────
+// On-chain polarity values → translation keys
+const POLARITY_KEY: Record<string, 'positive' | 'negative'> = {
+  'ポジティブ': 'positive',
+  'ネガティブ': 'negative',
+};
 
-interface SubcategoryDef {
-  value: string;
-  label: string;
-  description: string;
-  prompt: string;
-}
+// On-chain subcategory values → translation path segments
+const SUBCATEGORY_KEY: Record<string, { group: 'subcategoryPositive' | 'subcategoryNegative'; key: 'empathy' | 'surprise' | 'unpleasant' | 'boring' }> = {
+  '共感': { group: 'subcategoryPositive', key: 'empathy'    },
+  '驚き': { group: 'subcategoryPositive', key: 'surprise'   },
+  '不快': { group: 'subcategoryNegative', key: 'unpleasant' },
+  '退屈': { group: 'subcategoryNegative', key: 'boring'     },
+};
 
-const POSITIVE_SUBS: SubcategoryDef[] = [
-  {
-    value: '共感',
-    label: '共感',
-    description: '自分の体験・好みと重なる',
-    prompt: '自分のどんな体験・好みと共通する?',
-  },
-  {
-    value: '驚き',
-    label: '驚き',
-    description: '予想外の展開・新しい発見がある',
-    prompt: 'どこが新しいと感じた?',
-  },
-];
-
-const NEGATIVE_SUBS: SubcategoryDef[] = [
-  {
-    value: '不快',
-    label: '不快',
-    description: '何かが引っかかる・嫌な感覚が残る',
-    prompt: 'なぜそう感じた?',
-  },
-  {
-    value: '退屈',
-    label: '退屈',
-    description: '物足りない・期待と違う手応えだった',
-    prompt: 'なぜそう感じた?',
-  },
-];
-
-function getSubcategories(polarity: string): SubcategoryDef[] {
-  if (polarity === 'ポジティブ') return POSITIVE_SUBS;
-  if (polarity === 'ネガティブ') return NEGATIVE_SUBS;
-  return [];
-}
-
-function getPrompt(subcategory: string): string {
-  return (
-    [...POSITIVE_SUBS, ...NEGATIVE_SUBS].find((s) => s.value === subcategory)
-      ?.prompt ?? ''
-  );
-}
+// On-chain values kept as-is; only display labels come from i18n
+const POLARITY_VALUES = ['ポジティブ', 'ネガティブ'] as const;
+const POSITIVE_SUB_VALUES = ['共感', '驚き'] as const;
+const NEGATIVE_SUB_VALUES = ['不快', '退屈'] as const;
 
 // ── サブコンポーネント ──────────────────────────────────────────────────────
 
@@ -72,10 +40,11 @@ function Step1Summary({
   items: string[];
   freeText: string;
 }) {
+  const t = useTranslations('create.step2');
   return (
     <div className="rounded-2xl border border-border bg-muted/40 px-5 py-4 space-y-2">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-        Step 1 の記録
+        {t('step1Summary')}
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-full bg-primary/15 px-3 py-0.5 text-xs font-semibold text-primary">
@@ -92,50 +61,18 @@ function Step1Summary({
       </div>
       {freeText && (
         <p className="text-sm text-foreground/80 leading-relaxed line-clamp-2">
-          "{freeText}"
+          &ldquo;{freeText}&rdquo;
         </p>
       )}
     </div>
   );
 }
 
-function SubcategoryCard({
-  sub,
-  selected,
-  onSelect,
-}: {
-  sub: SubcategoryDef;
-  selected: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <label
-      className={cn(
-        'flex cursor-pointer items-start gap-3 rounded-xl border px-5 py-4 transition-all select-none',
-        selected
-          ? 'border-primary bg-primary/10'
-          : 'border-border bg-card hover:border-primary/40 hover:bg-card/80',
-      )}
-    >
-      <RadioGroupItem value={sub.value} className="mt-0.5 shrink-0" />
-      <div>
-        <p
-          className={cn(
-            'text-sm font-semibold transition-colors',
-            selected ? 'text-primary' : 'text-foreground',
-          )}
-        >
-          {sub.label}
-        </p>
-        <p className="mt-0.5 text-xs text-muted-foreground">{sub.description}</p>
-      </div>
-    </label>
-  );
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────
 
 export default function Step2Page() {
+  const t = useTranslations('create.step2');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const { photoBlobId, step1, step2, setStep2 } = usePreMintStore();
 
@@ -146,8 +83,16 @@ export default function Step2Page() {
 
   if (!photoBlobId || !step1.category) return null;
 
-  const subcategories = getSubcategories(step2.polarity);
-  const prompt = getPrompt(step2.subcategory);
+  const subcategoryValues =
+    step2.polarity === 'ポジティブ' ? POSITIVE_SUB_VALUES :
+    step2.polarity === 'ネガティブ' ? NEGATIVE_SUB_VALUES :
+    [];
+
+  const promptKey = step2.subcategory ? SUBCATEGORY_KEY[step2.subcategory] : null;
+  const prompt = promptKey
+    ? t(`${promptKey.group}.${promptKey.key}.prompt` as Parameters<typeof t>[0])
+    : '';
+
   const canProceed =
     !!step2.polarity && !!step2.subcategory && !!step2.connection.trim();
 
@@ -167,7 +112,7 @@ export default function Step2Page() {
         className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        戻る
+        {tCommon('back')}
       </button>
 
       {/* Step 1 サマリ */}
@@ -180,12 +125,8 @@ export default function Step2Page() {
       {/* ── Polarity ── */}
       <div className="space-y-5">
         <div>
-          <h1 className="text-xl font-bold leading-snug">
-            その感情の向きは?
-          </h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            プラスとマイナス、どちらに近かったですか
-          </p>
+          <h1 className="text-xl font-bold leading-snug">{t('polarityTitle')}</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">{t('polarityHint')}</p>
         </div>
 
         <RadioGroup
@@ -193,8 +134,9 @@ export default function Step2Page() {
           onValueChange={handlePolarityChange}
           className="grid grid-cols-2 gap-3"
         >
-          {(['ポジティブ', 'ネガティブ'] as const).map((pol) => {
+          {POLARITY_VALUES.map((pol) => {
             const active = step2.polarity === pol;
+            const key = POLARITY_KEY[pol];
             return (
               <label
                 key={pol}
@@ -212,7 +154,7 @@ export default function Step2Page() {
                     active ? 'text-primary' : 'text-foreground',
                   )}
                 >
-                  {pol === 'ポジティブ' ? '✦ ポジティブ' : '◆ ネガティブ'}
+                  {t(`polarity.${key}`)}
                 </span>
               </label>
             );
@@ -224,12 +166,8 @@ export default function Step2Page() {
       {step2.polarity && (
         <div className="space-y-5">
           <div>
-            <h2 className="text-lg font-bold leading-snug">
-              その感情をもう少し詳しく
-            </h2>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              4 分類のうち、一番近いものを選んでください
-            </p>
+            <h2 className="text-lg font-bold leading-snug">{t('subcategoryTitle')}</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground">{t('subcategoryHint')}</p>
           </div>
 
           <RadioGroup
@@ -237,14 +175,36 @@ export default function Step2Page() {
             onValueChange={handleSubcategoryChange}
             className="gap-3"
           >
-            {subcategories.map((sub) => (
-              <SubcategoryCard
-                key={sub.value}
-                sub={sub}
-                selected={step2.subcategory === sub.value}
-                onSelect={() => handleSubcategoryChange(sub.value)}
-              />
-            ))}
+            {subcategoryValues.map((val) => {
+              const info = SUBCATEGORY_KEY[val];
+              const selected = step2.subcategory === val;
+              const labelKey = `${info.group}.${info.key}.label` as Parameters<typeof t>[0];
+              const descKey  = `${info.group}.${info.key}.description` as Parameters<typeof t>[0];
+              return (
+                <label
+                  key={val}
+                  className={cn(
+                    'flex cursor-pointer items-start gap-3 rounded-xl border px-5 py-4 transition-all select-none',
+                    selected
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border bg-card hover:border-primary/40 hover:bg-card/80',
+                  )}
+                >
+                  <RadioGroupItem value={val} className="mt-0.5 shrink-0" />
+                  <div>
+                    <p
+                      className={cn(
+                        'text-sm font-semibold transition-colors',
+                        selected ? 'text-primary' : 'text-foreground',
+                      )}
+                    >
+                      {t(labelKey)}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{t(descKey)}</p>
+                  </div>
+                </label>
+              );
+            })}
           </RadioGroup>
         </div>
       )}
@@ -255,13 +215,13 @@ export default function Step2Page() {
           <div>
             <h2 className="text-lg font-bold leading-snug">{prompt}</h2>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              <span className="text-destructive">*</span> 必須 —
-              この言葉が次のステップで書くメモの土台になります
+              <span className="text-destructive">*</span> {tCommon('required')} —{' '}
+              {t('connectionHint')}
             </p>
           </div>
 
           <Textarea
-            placeholder="思いついたままの言葉で構いません。断片でも、箇条書きでも。"
+            placeholder={t('connectionPlaceholder')}
             rows={5}
             value={step2.connection}
             onChange={(e) => setStep2({ connection: e.target.value })}
@@ -277,7 +237,7 @@ export default function Step2Page() {
         disabled={!canProceed}
         onClick={() => router.push('/create/step3')}
       >
-        次へ — メモを書く
+        {t('nextButton')}
       </Button>
     </div>
   );

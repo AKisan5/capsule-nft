@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { Link } from '@/i18n/navigation';
 import { Plus, TrendingUp, Eye } from 'lucide-react';
@@ -33,7 +34,15 @@ function CapsuleCardSkeleton() {
 
 // ── Capsule grid card ──────────────────────────────────────────────────────────
 
-function CapsuleCard({ capsule, stats }: { capsule: CapsuleData; stats: CapsuleWithStats['stats'] }) {
+function CapsuleCard({
+  capsule,
+  stats,
+  untitledEvent,
+}: {
+  capsule: CapsuleData;
+  stats: CapsuleWithStats['stats'];
+  untitledEvent: string;
+}) {
   const date = new Date(capsule.mintedAtMs).toLocaleDateString('ja-JP', {
     month: 'short',
     day: 'numeric',
@@ -71,7 +80,7 @@ function CapsuleCard({ capsule, stats }: { capsule: CapsuleData; stats: CapsuleW
       <div className="space-y-2 p-3">
         <div>
           <p className="truncate text-sm font-medium leading-tight">
-            {capsule.eventName || '無題イベント'}
+            {capsule.eventName || untitledEvent}
           </p>
           <p className="text-xs text-muted-foreground">{date}</p>
         </div>
@@ -105,19 +114,18 @@ function CapsuleCard({ capsule, stats }: { capsule: CapsuleData; stats: CapsuleW
 // ── Empty state ────────────────────────────────────────────────────────────────
 
 function EmptyState() {
+  const t = useTranslations('my');
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <div className="mb-4 text-4xl opacity-30">💊</div>
-      <p className="text-sm font-medium">カプセルがありません</p>
-      <p className="mt-1 text-xs text-muted-foreground">
-        初めての感動をカプセルに封じましょう
-      </p>
+      <p className="text-sm font-medium">{t('empty')}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{t('emptyDesc')}</p>
       <Link
         href="/create/photo"
         className="mt-6 flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
       >
         <Plus className="size-4" />
-        作成する
+        {t('emptyCta')}
       </Link>
     </div>
   );
@@ -126,6 +134,7 @@ function EmptyState() {
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function MyPage() {
+  const t = useTranslations('my');
   const router = useRouter();
   const account = useCurrentAccount();
 
@@ -133,13 +142,11 @@ export default function MyPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Auth guard
   useEffect(() => {
-    if (account === undefined) return; // dapp-kit hydrating
+    if (account === undefined) return;
     if (!account) router.replace('/login');
   }, [account, router]);
 
-  // Fetch capsules + stats
   useEffect(() => {
     if (!account?.address) return;
 
@@ -184,7 +191,7 @@ export default function MyPage() {
       } catch (err) {
         if (!cancelled) {
           console.error('[my] fetch failed:', err);
-          setError('カプセルの取得に失敗しました');
+          setError(t('fetchError'));
           setLoading(false);
         }
       }
@@ -192,7 +199,7 @@ export default function MyPage() {
 
     load();
     return () => { cancelled = true; };
-  }, [account?.address]);
+  }, [account?.address, t]);
 
   const totalViews = items.reduce((s, i) => s + i.stats.totalViews, 0);
   const avgRate =
@@ -209,10 +216,10 @@ export default function MyPage() {
       <div className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4">
           <div>
-            <h1 className="text-base font-semibold">マイカプセル</h1>
+            <h1 className="text-base font-semibold">{t('title')}</h1>
             {!loading && items.length > 0 && (
               <p className="text-xs text-muted-foreground">
-                {items.length} 個 · 計 {totalViews} 閲覧 · 平均伝達率 {avgRate}%
+                {t('capsuleCountFull', { count: items.length, views: totalViews, rate: avgRate })}
               </p>
             )}
           </div>
@@ -221,7 +228,7 @@ export default function MyPage() {
             className="flex items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
             <Plus className="size-3.5" />
-            新規作成
+            {t('newCapsule')}
           </Link>
         </div>
       </div>
@@ -240,7 +247,7 @@ export default function MyPage() {
               onClick={() => window.location.reload()}
               className="mt-3 text-xs text-muted-foreground underline"
             >
-              再読み込み
+              {t('reload')}
             </button>
           </div>
         ) : items.length === 0 ? (
@@ -248,7 +255,12 @@ export default function MyPage() {
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {items.map(({ capsule, stats }) => (
-              <CapsuleCard key={capsule.id} capsule={capsule} stats={stats} />
+              <CapsuleCard
+                key={capsule.id}
+                capsule={capsule}
+                stats={stats}
+                untitledEvent={t('untitledEvent')}
+              />
             ))}
           </div>
         )}

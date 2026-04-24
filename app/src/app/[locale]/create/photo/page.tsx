@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { ImageIcon, UploadIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -10,6 +11,7 @@ import { usePreMintStore } from '@/stores/preMint';
 import { uploadImage } from '@/lib/walrus/image';
 
 export default function PhotoPage() {
+  const t = useTranslations('create.photo');
   const router = useRouter();
   const { eventName, fighterTag, setPhoto, setEventName, setFighterTag } =
     usePreMintStore();
@@ -22,12 +24,12 @@ export default function PhotoPage() {
 
   const handleFile = useCallback((f: File) => {
     if (!f.type.startsWith('image/')) {
-      toast.error('画像ファイルを選択してください');
+      toast.error(t('errors.imageOnly'));
       return;
     }
     setFile(f);
     setPreview(URL.createObjectURL(f));
-  }, []);
+  }, [t]);
 
   const onDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -41,15 +43,15 @@ export default function PhotoPage() {
 
   const onNext = async () => {
     if (!file) {
-      toast.error('写真を選択してください');
+      toast.error(t('errors.noPhoto'));
       return;
     }
     if (!eventName.trim()) {
-      toast.error('イベント名を入力してください');
+      toast.error(t('errors.noEvent'));
       return;
     }
     if (!fighterTag.trim()) {
-      toast.error('ファイタータグを入力してください');
+      toast.error(t('errors.noFighter'));
       return;
     }
 
@@ -68,17 +70,15 @@ export default function PhotoPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold">あの瞬間の写真</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          心が震えた瞬間を切り取った一枚をアップロード
-        </p>
+        <h1 className="text-xl font-bold">{t('title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('description')}</p>
       </div>
 
       {/* Drop zone */}
       <div
         role="button"
         tabIndex={0}
-        aria-label="写真を選択"
+        aria-label={t('title')}
         onClick={() => inputRef.current?.click()}
         onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
         onDrop={onDrop}
@@ -99,8 +99,8 @@ export default function PhotoPage() {
               <ImageIcon className="size-8" />
             </div>
             <div className="text-center">
-              <p className="font-medium">タップして選択</p>
-              <p className="text-xs">またはドラッグ＆ドロップ</p>
+              <p className="font-medium">{t('tapToSelect')}</p>
+              <p className="text-xs">{t('orDragDrop')}</p>
             </div>
           </div>
         )}
@@ -121,7 +121,7 @@ export default function PhotoPage() {
           className="text-xs text-muted-foreground underline underline-offset-2"
           onClick={() => inputRef.current?.click()}
         >
-          別の写真を選ぶ
+          {t('changePhoto')}
         </button>
       )}
 
@@ -129,20 +129,20 @@ export default function PhotoPage() {
       <div className="space-y-3">
         <div>
           <label className="mb-1 block text-sm font-medium">
-            イベント名 <span className="text-destructive">*</span>
+            {t('eventLabel')} <span className="text-destructive">*</span>
           </label>
           <Input
-            placeholder="例: ONE 170"
+            placeholder={t('eventPlaceholder')}
             value={eventName}
             onChange={(e) => setEventName(e.target.value)}
           />
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">
-            ファイタータグ <span className="text-destructive">*</span>
+            {t('fighterLabel')} <span className="text-destructive">*</span>
           </label>
           <Input
-            placeholder="例: Takeru"
+            placeholder={t('fighterPlaceholder')}
             value={fighterTag}
             onChange={(e) => setFighterTag(e.target.value)}
           />
@@ -158,10 +158,10 @@ export default function PhotoPage() {
         {uploading ? (
           <>
             <UploadIcon className="animate-pulse" />
-            アップロード中…
+            {t('uploading')}
           </>
         ) : (
-          '次へ — 瞬間を記録'
+          t('nextButton')
         )}
       </Button>
     </div>

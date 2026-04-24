@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { ChevronLeft, AlertTriangle, Copy, Check, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
@@ -10,7 +11,7 @@ import { mintDemo, buildMintTx, extractCapsuleObjectId } from '@/lib/sui/mint';
 import { NETWORK, getSuiClient } from '@/lib/sui/client';
 import { cn } from '@/lib/utils';
 
-// ── IndexedDB draft clear (step3 と同じ DB) ────────────────────────────────
+// ── IndexedDB draft clear ──────────────────────────────────────────────────────
 
 async function clearStep3Draft(): Promise<void> {
   try {
@@ -28,7 +29,7 @@ async function clearStep3Draft(): Promise<void> {
   } catch { /* ignore */ }
 }
 
-// ── 定数 ──────────────────────────────────────────────────────────────────
+// ── 定数 ──────────────────────────────────────────────────────────────────────
 
 const HOLD_MS = 2000;
 const TICK_MS = 16;
@@ -40,12 +41,11 @@ const FAUCET_URL =
     ? 'https://faucet.testnet.sui.io/'
     : 'https://faucet.devnet.sui.io/';
 
-// ── サブコンポーネント ──────────────────────────────────────────────────────
+// ── Glass capsule ──────────────────────────────────────────────────────────────
 
 function GlassCapsule({ src }: { src: string }) {
   return (
     <div className="animate-float relative mx-auto" style={{ width: 188, height: 268 }}>
-      {/* 外側グロー */}
       <div
         className="absolute -inset-3 rounded-[120px] blur-2xl opacity-40"
         style={{
@@ -53,22 +53,12 @@ function GlassCapsule({ src }: { src: string }) {
             'radial-gradient(ellipse at 50% 40%, oklch(0.72 0.22 295) 0%, transparent 70%)',
         }}
       />
-      {/* カプセル本体 */}
       <div className="relative h-full w-full overflow-hidden rounded-[120px] border border-white/15 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
-        {/* 写真 */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt="capsule photo" className="h-full w-full object-cover" />
-
-        {/* ガラス上部ハイライト */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/28 via-white/5 to-transparent" />
-
-        {/* 上部リムライン */}
         <div className="absolute top-8 left-10 right-10 h-px rounded-full bg-white/35" />
-
-        {/* 下部ビネット */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-
-        {/* 内側ガラスリフレクション */}
         <div
           className="absolute left-3 top-8 w-5 rounded-full"
           style={{
@@ -108,7 +98,7 @@ function Chip({ label }: { label: string }) {
   );
 }
 
-// ── ミント成功画面 ────────────────────────────────────────────────────────────
+// ── Mint success screen ────────────────────────────────────────────────────────
 
 function MintSuccessScreen({
   objectId,
@@ -119,6 +109,7 @@ function MintSuccessScreen({
   onNewCapsule: () => void;
   onMyPage: () => void;
 }) {
+  const t = useTranslations('create.review.success');
   const [copied, setCopied] = useState(false);
   const explorerUrl =
     NETWORK === 'testnet'
@@ -133,20 +124,15 @@ function MintSuccessScreen({
 
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center gap-8 px-4 text-center">
-      {/* アイコン */}
       <div className="flex size-24 items-center justify-center rounded-full bg-gradient-to-br from-purple-500/30 to-indigo-500/20 ring-1 ring-purple-400/40 text-5xl">
         💊
       </div>
 
-      {/* ヘッドライン */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">カプセル完成！</h1>
-        <p className="text-muted-foreground text-sm">
-          あなたの感動が Sui チェーンに永久保存されました
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
+        <p className="text-muted-foreground text-sm">{t('description')}</p>
       </div>
 
-      {/* Object ID */}
       <div className="w-full max-w-sm rounded-xl border border-border bg-card px-4 py-3 text-left space-y-1">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Object ID
@@ -156,7 +142,6 @@ function MintSuccessScreen({
         </p>
       </div>
 
-      {/* アクション */}
       <div className="w-full max-w-sm space-y-3">
         <button
           onClick={handleCopy}
@@ -167,7 +152,7 @@ function MintSuccessScreen({
           ) : (
             <Copy className="size-4" />
           )}
-          {copied ? 'コピーしました' : 'Object ID をコピー'}
+          {copied ? t('copied') : t('copyId')}
         </button>
 
         <a
@@ -177,28 +162,28 @@ function MintSuccessScreen({
           className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
         >
           <ExternalLink className="size-4" />
-          Explorer で確認
+          {t('viewExplorer')}
         </a>
 
         <button
           onClick={onMyPage}
           className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
         >
-          マイページへ
+          {t('myPage')}
         </button>
 
         <button
           onClick={onNewCapsule}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
         >
-          新しいカプセルを作る
+          {t('newCapsule')}
         </button>
       </div>
     </div>
   );
 }
 
-// ── Long-press ring button ─────────────────────────────────────────────────
+// ── Hold-to-mint button ────────────────────────────────────────────────────────
 
 function HoldToMintButton({
   onConfirm,
@@ -207,7 +192,8 @@ function HoldToMintButton({
   onConfirm: () => void;
   disabled: boolean;
 }) {
-  const [progress, setProgress] = useState(0); // 0..1
+  const t = useTranslations('create.review');
+  const [progress, setProgress] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startRef = useRef<number | null>(null);
   const confirmedRef = useRef(false);
@@ -251,7 +237,6 @@ function HoldToMintButton({
         onPointerCancel={cancelPress}
         style={{ touchAction: 'none' }}
       >
-        {/* SVG progress ring */}
         <svg
           width="128"
           height="128"
@@ -260,22 +245,9 @@ function HoldToMintButton({
           style={{ transform: 'rotate(-90deg)' }}
           aria-hidden
         >
-          {/* Track */}
+          <circle cx="60" cy="60" r={SVG_RADIUS} fill="none" strokeWidth="3" className="stroke-border" />
           <circle
-            cx="60"
-            cy="60"
-            r={SVG_RADIUS}
-            fill="none"
-            strokeWidth="3"
-            className="stroke-border"
-          />
-          {/* Fill */}
-          <circle
-            cx="60"
-            cy="60"
-            r={SVG_RADIUS}
-            fill="none"
-            strokeWidth="3"
+            cx="60" cy="60" r={SVG_RADIUS} fill="none" strokeWidth="3"
             strokeLinecap="round"
             strokeDasharray={SVG_CIRCUMFERENCE}
             strokeDashoffset={dashOffset}
@@ -284,7 +256,6 @@ function HoldToMintButton({
           />
         </svg>
 
-        {/* Inner button */}
         <div
           className={cn(
             'relative flex h-32 w-32 flex-col items-center justify-center rounded-full border transition-colors',
@@ -298,33 +269,31 @@ function HoldToMintButton({
           <span className="text-xs font-semibold leading-tight text-center">
             {progress > 0 ? (
               <>
-                封印中
+                {t('holdSealing')}
                 <br />
                 <span className="text-[10px] text-muted-foreground">
-                  {Math.round(progress * 100)}%
+                  {t('holdProgress', { percent: Math.round(progress * 100) })}
                 </span>
               </>
             ) : (
               <>
-                押し続けて
-                <br />
-                ミント
+                {t('holdPrompt')}
               </>
             )}
           </span>
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        2 秒間長押しで確定
-      </p>
+      <p className="text-xs text-muted-foreground">{t('holdHint')}</p>
     </div>
   );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ReviewPage() {
+  const t = useTranslations('create.review');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const store = usePreMintStore();
   const currentAccount = useCurrentAccount();
@@ -352,8 +321,6 @@ export default function ReviewPage() {
   const [mintError, setMintError] = useState<string | null>(null);
   const [mintedObjectId, setMintedObjectId] = useState<string | null>(null);
 
-  // ── ガード (成功後は動かさない) ─────────────────────────────────────────
-
   useEffect(() => {
     if (mintedObjectId) return;
     if (!photoBlobId) router.replace('/create/photo');
@@ -372,8 +339,6 @@ export default function ReviewPage() {
     step3.memo,
     router,
   ]);
-
-  // ── ミント成功画面 ──────────────────────────────────────────────────────
 
   if (mintedObjectId) {
     return (
@@ -402,8 +367,6 @@ export default function ReviewPage() {
   )
     return null;
 
-  // ── ミント処理 ──────────────────────────────────────────────────────────
-
   const handleMint = async () => {
     setMinting(true);
     setMintError(null);
@@ -419,43 +382,35 @@ export default function ReviewPage() {
       }
       setMintedObjectId(objectId);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : '不明なエラーが発生しました';
+      const msg = err instanceof Error ? err.message : t('mintErrorUnknown');
       setMintError(msg);
-      toast.error('ミントに失敗しました', { description: msg });
+      toast.error(t('mintErrorUnknown'), { description: msg });
     } finally {
       setMinting(false);
     }
   };
 
-  // ── Render ──────────────────────────────────────────────────────────────
-
   return (
     <div className="space-y-10 pb-10">
-      {/* 戻る */}
       <button
         onClick={() => router.push('/create/step3')}
         className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        戻る
+        {tCommon('back')}
       </button>
 
-      {/* ── ガラスカプセル アニメーション ── */}
       {photoPreviewUrl && (
         <div className="flex flex-col items-center gap-6 py-4">
           <GlassCapsule src={photoPreviewUrl} />
           <div className="text-center">
-            <p className="text-lg font-bold">カプセルを確認</p>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              内容を確認してからミントしてください
-            </p>
+            <p className="text-lg font-bold">{t('confirmTitle')}</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">{t('confirmHint')}</p>
           </div>
         </div>
       )}
 
-      {/* ── サマリカード ── */}
       <div className="space-y-6 rounded-2xl border border-border bg-card/50 px-5 py-6">
-        {/* Meta */}
         <div className="flex flex-wrap gap-2">
           {eventName && (
             <span className="rounded-full bg-secondary px-3 py-0.5 text-xs font-medium text-secondary-foreground">
@@ -471,8 +426,7 @@ export default function ReviewPage() {
 
         <div className="h-px bg-border" />
 
-        {/* Step 1 */}
-        <SummarySection title="Step 1 — 瞬間">
+        <SummarySection title={t('step1Label')}>
           <div className="flex flex-wrap gap-1.5">
             <Chip label={step1.category} />
             {step1.items.map((item) => (
@@ -486,61 +440,46 @@ export default function ReviewPage() {
           </div>
           {step1.freeText && (
             <p className="text-sm leading-relaxed text-foreground/80">
-              "{step1.freeText}"
+              &ldquo;{step1.freeText}&rdquo;
             </p>
           )}
         </SummarySection>
 
         <div className="h-px bg-border" />
 
-        {/* Step 2 */}
-        <SummarySection title="Step 2 — 感情">
+        <SummarySection title={t('step2Label')}>
           <div className="flex flex-wrap gap-1.5">
             <Chip label={step2.polarity} />
             <Chip label={step2.subcategory} />
           </div>
           <p className="text-sm leading-relaxed text-foreground/80">
-            "{step2.connection}"
+            &ldquo;{step2.connection}&rdquo;
           </p>
         </SummarySection>
 
         <div className="h-px bg-border" />
 
-        {/* Step 3 */}
-        <SummarySection title="Step 3 — メモ">
-          <p className="whitespace-pre-wrap text-sm leading-relaxed">
-            {step3.memo}
-          </p>
+        <SummarySection title={t('step3Label')}>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed">{step3.memo}</p>
         </SummarySection>
       </div>
 
-      {/* ── 警告文 ── */}
       <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-5 py-5">
         <div className="flex gap-3">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-destructive/70" />
           <blockquote className="space-y-2 text-sm leading-relaxed text-foreground/80">
-            <p>
-              このカプセルには、あなたの言葉が封じられます。
-            </p>
-            <p>
-              ミントすると Step 1–3 の中身は永久に不変になります。
-            </p>
-            <p>
-              これが「この試合に対する、この瞬間のあなたの本音」として
-              歴史に刻まれます。
-            </p>
-            <p className="font-semibold text-foreground">
-              他人の感想を見る前に、確定させましょう。
-            </p>
+            <p>{t('warningP1')}</p>
+            <p>{t('warningP2')}</p>
+            <p>{t('warningP3')}</p>
+            <p className="font-semibold text-foreground">{t('warningP4')}</p>
           </blockquote>
         </div>
       </div>
 
-      {/* ── ガス代 / 認証バナー ── */}
       {currentAccount ? (
         <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 font-medium text-emerald-400 text-[11px]">
-            ウォレット接続済み
+            {t('walletConnected')}
           </span>
           <span className="font-mono">
             {currentAccount.address.slice(0, 6)}…{currentAccount.address.slice(-4)}
@@ -548,22 +487,20 @@ export default function ReviewPage() {
         </div>
       ) : (
         <div className="flex items-center justify-center gap-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-xs text-yellow-700 dark:text-yellow-400">
-          <span className="font-semibold">デモモード</span>
-          <span>— ログインなしで devnet にミントします</span>
+          <span className="font-semibold">{t('demoMode')}</span>
+          <span>{t('demoModeDesc')}</span>
         </div>
       )}
 
-      {/* ── ミントボタン ── */}
       {minting ? (
         <div className="flex flex-col items-center gap-3 py-4">
           <div className="size-12 animate-spin rounded-full border-2 border-border border-t-primary" />
-          <p className="text-sm text-muted-foreground">ブロックチェーンに刻んでいます…</p>
+          <p className="text-sm text-muted-foreground">{t('minting')}</p>
         </div>
       ) : (
         <HoldToMintButton onConfirm={handleMint} disabled={minting} />
       )}
 
-      {/* ── エラー + 再試行 ── */}
       {mintError && !minting && (
         <div className="space-y-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-4">
           <p className="text-sm text-destructive">{mintError}</p>
@@ -572,7 +509,7 @@ export default function ReviewPage() {
               onClick={handleMint}
               className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium hover:bg-muted"
             >
-              再試行
+              {tCommon('retry')}
             </button>
             {mintError.toLowerCase().includes('gas') ||
             mintError.toLowerCase().includes('balance') ||
@@ -583,7 +520,7 @@ export default function ReviewPage() {
                 rel="noopener noreferrer"
                 className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
               >
-                テストネット Faucet で SUI を取得 →
+                {t('faucetLink')}
               </a>
             ) : null}
           </div>

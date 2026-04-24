@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { ChevronLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -66,6 +67,7 @@ function Chip({ label, muted = false }: { label: string; muted?: boolean }) {
 }
 
 function CollapsibleSummary() {
+  const t = useTranslations('create.step3');
   const { step1, step2 } = usePreMintStore();
   const [open, setOpen] = useState(false);
 
@@ -89,10 +91,9 @@ function CollapsibleSummary() {
 
       {open && (
         <div className="border-t border-border bg-muted/20 px-5 py-4 space-y-4">
-          {/* Step 1 */}
           <div className="space-y-2">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Step 1 — 瞬間
+              {t('summaryStep1')}
             </p>
             {step1.items.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
@@ -103,19 +104,18 @@ function CollapsibleSummary() {
             )}
             {step1.freeText && (
               <p className="text-sm text-foreground/80 leading-relaxed">
-                "{step1.freeText}"
+                &ldquo;{step1.freeText}&rdquo;
               </p>
             )}
           </div>
 
-          {/* Step 2 */}
           <div className="space-y-2">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Step 2 — 感情
+              {t('summaryStep2')}
             </p>
             {step2.connection && (
               <p className="text-sm text-foreground/80 leading-relaxed">
-                "{step2.connection}"
+                &ldquo;{step2.connection}&rdquo;
               </p>
             )}
           </div>
@@ -130,6 +130,8 @@ function CollapsibleSummary() {
 const CHAR_MIN = 10;
 
 export default function Step3Page() {
+  const t = useTranslations('create.step3');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const {
     photoBlobId,
@@ -144,8 +146,6 @@ export default function Step3Page() {
   } = usePreMintStore();
 
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // ── ガード ────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (!photoBlobId) {
@@ -169,10 +169,8 @@ export default function Step3Page() {
     router,
   ]);
 
-  // ── IDB 復元 (初回マウント) ───────────────────────────────────────────────
-
   useEffect(() => {
-    if (step3.memo) return; // すでに入力済みなら復元しない
+    if (step3.memo) return;
     loadDraft()
       .then((draft) => {
         if (!draft) return;
@@ -183,8 +181,6 @@ export default function Step3Page() {
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // ── アンマウント時タイマークリア ─────────────────────────────────────────
 
   useEffect(() => {
     return () => {
@@ -200,17 +196,10 @@ export default function Step3Page() {
   )
     return null;
 
-  // ── アイドル 10 秒でオートセーブ ─────────────────────────────────────────
-
   const scheduleAutosave = (memo: string) => {
     if (idleTimer.current) clearTimeout(idleTimer.current);
     idleTimer.current = setTimeout(() => {
-      saveDraft({
-        memo,
-        eventName,
-        fighterTag,
-        savedAt: Date.now(),
-      }).catch(() => {});
+      saveDraft({ memo, eventName, fighterTag, savedAt: Date.now() }).catch(() => {});
     }, 10_000);
   };
 
@@ -225,40 +214,32 @@ export default function Step3Page() {
 
   return (
     <div className="space-y-10">
-      {/* 戻る */}
       <button
         onClick={() => router.push('/create/step2')}
         className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        戻る
+        {tCommon('back')}
       </button>
 
-      {/* Step 1-2 サマリ (collapsible) */}
       <CollapsibleSummary />
 
-      {/* メッセージ */}
       <div className="space-y-3">
-        <h1 className="text-2xl font-bold leading-snug tracking-tight">
-          これを、あなたの言葉で
-          <br />
-          メモにしてください。
+        <h1 className="text-2xl font-bold leading-snug tracking-tight whitespace-pre-line">
+          {t('title')}
         </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          書き方は自由。「やばい」のまま書いてもいい。
-          <br />
-          大事なのは、最後まで書き終えること。
+        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+          {t('instruction')}
         </p>
       </div>
 
-      {/* 大会・ファイター入力 */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label className="block text-xs font-medium text-muted-foreground">
-            どの大会?
+            {t('eventLabel')}
           </label>
           <Input
-            placeholder="ONE Fight Night 25"
+            placeholder={t('eventPlaceholder')}
             value={eventName}
             onChange={(e) => setEventName(e.target.value)}
             className="text-sm"
@@ -266,10 +247,10 @@ export default function Step3Page() {
         </div>
         <div className="space-y-1.5">
           <label className="block text-xs font-medium text-muted-foreground">
-            誰の?
+            {t('fighterLabel')}
           </label>
           <Input
-            placeholder="武尊, Stamp…"
+            placeholder={t('fighterPlaceholder')}
             value={fighterTag}
             onChange={(e) => setFighterTag(e.target.value)}
             className="text-sm"
@@ -277,12 +258,11 @@ export default function Step3Page() {
         </div>
       </div>
 
-      {/* メモ textarea */}
       <div className="space-y-2">
         <Textarea
           // eslint-disable-next-line jsx-a11y/no-autofocus
           autoFocus
-          placeholder={`例: あの瞬間、鳥肌が立った。まだ整理できないけど、あの右ストレートを見た瞬間に何かが変わった気がした。言葉にするのは難しいけれど、これだけは言える——`}
+          placeholder={t('memoPlaceholder')}
           rows={12}
           value={step3.memo}
           onChange={handleMemoChange}
@@ -292,27 +272,21 @@ export default function Step3Page() {
           <span>
             {charCount < CHAR_MIN ? (
               <span className="text-muted-foreground">
-                あと{' '}
-                <span className="font-semibold text-foreground">
-                  {CHAR_MIN - charCount}
-                </span>{' '}
-                文字
+                {t('charRemaining', { count: CHAR_MIN - charCount })}
               </span>
             ) : (
-              <span className="text-primary font-medium">✓ 書き終えられます</span>
+              <span className="text-primary font-medium">{t('charDone')}</span>
             )}
           </span>
-          <span>{charCount} 文字</span>
+          <span>{t('charCount', { count: charCount })}</span>
         </div>
       </div>
 
-      {/* ボタン */}
       <Button
         className="w-full"
         size="lg"
         disabled={!canProceed}
         onClick={() => {
-          // 即時セーブしてから遷移
           if (idleTimer.current) clearTimeout(idleTimer.current);
           saveDraft({
             memo: step3.memo,
@@ -323,7 +297,7 @@ export default function Step3Page() {
           router.push('/create/review');
         }}
       >
-        書き終えた
+        {t('finishButton')}
       </Button>
     </div>
   );
