@@ -294,6 +294,8 @@ function HoldToMintButton({
 export default function ReviewPage() {
   const t = useTranslations('create.review');
   const tCommon = useTranslations('common');
+  const tStep1 = useTranslations('create.step1');
+  const tStep2 = useTranslations('create.step2');
   const router = useRouter();
   const store = usePreMintStore();
   const currentAccount = useCurrentAccount();
@@ -428,13 +430,15 @@ export default function ReviewPage() {
 
         <SummarySection title={t('step1Label')}>
           <div className="flex flex-wrap gap-1.5">
-            <Chip label={step1.category} />
+            {step1.category && (
+              <Chip label={tStep1(`categories.${step1.category}` as Parameters<typeof tStep1>[0])} />
+            )}
             {step1.items.map((item) => (
               <span
                 key={item}
                 className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground"
               >
-                {item}
+                {tStep1(`subcategories.${item}` as Parameters<typeof tStep1>[0])}
               </span>
             ))}
           </div>
@@ -449,8 +453,14 @@ export default function ReviewPage() {
 
         <SummarySection title={t('step2Label')}>
           <div className="flex flex-wrap gap-1.5">
-            <Chip label={step2.polarity} />
-            <Chip label={step2.subcategory} />
+            {step2.polarity && (
+              <Chip label={tStep2(`polarity.${step2.polarity}` as Parameters<typeof tStep2>[0])} />
+            )}
+            {step2.subcategory && step2.polarity && (
+              <Chip label={tStep2(
+                `${step2.polarity === 'positive' ? 'subcategoryPositive' : 'subcategoryNegative'}.${step2.subcategory}.label` as Parameters<typeof tStep2>[0]
+              )} />
+            )}
           </div>
           <p className="text-sm leading-relaxed text-foreground/80">
             &ldquo;{step2.connection}&rdquo;

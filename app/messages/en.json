@@ -26,7 +26,8 @@
   "home": {
     "hero": "Turn the moments that moved you into on-chain memories, in your own words.",
     "cta": "Create a Capsule",
-    "login": "Log in"
+    "login": "Log in",
+    "metaDescription": "Seal your most electric ONE Championship moment — photo, your words, on the Sui blockchain forever."
   },
   "my": {
     "title": "My Capsules",

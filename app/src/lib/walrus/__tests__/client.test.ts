@@ -89,7 +89,7 @@ describe('uploadBlob', () => {
   it('throws on network failure', async () => {
     vi.spyOn(global, 'fetch').mockRejectedValueOnce(new TypeError('Failed to fetch'));
 
-    await expect(uploadBlob(new Uint8Array([1]))).rejects.toThrow('接続できません');
+    await expect(uploadBlob(new Uint8Array([1]))).rejects.toThrow('Cannot reach Walrus publisher');
   });
 
   it('throws on unexpected JSON shape', async () => {
@@ -97,7 +97,7 @@ describe('uploadBlob', () => {
       makeResponse({ unexpected: true }),
     );
 
-    await expect(uploadBlob(new Uint8Array([1]))).rejects.toThrow('予期しない');
+    await expect(uploadBlob(new Uint8Array([1]))).rejects.toThrow('unexpected response format');
   });
 });
 
@@ -125,7 +125,7 @@ describe('downloadBlob', () => {
   it('throws on network failure', async () => {
     vi.spyOn(global, 'fetch').mockRejectedValueOnce(new TypeError('Failed to fetch'));
 
-    await expect(downloadBlob('any-id')).rejects.toThrow('接続できません');
+    await expect(downloadBlob('any-id')).rejects.toThrow('Cannot reach Walrus aggregator');
   });
 
   it('round-trip: upload then download returns identical bytes', async () => {

@@ -119,7 +119,7 @@ async function ensureDemoGas(address: string): Promise<void> {
     });
     await new Promise(r => setTimeout(r, 3000));
   } catch {
-    throw new Error('フォーセットからSUIを取得できませんでした。しばらく待ってから再試行してください。');
+    throw new Error('Could not get SUI from faucet. Please wait a moment and try again.');
   }
 }
 

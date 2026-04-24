@@ -26,7 +26,8 @@
   "home": {
     "hero": "心が震えた瞬間を、あなたの言葉でオンチェーンに。",
     "cta": "カプセルを作る",
-    "login": "ログイン"
+    "login": "ログイン",
+    "metaDescription": "ONE Championship 観戦で心が震えた一瞬を、写真と自分の言葉でカプセルに封じ、Sui オンチェーンに永久保存する DApp。"
   },
   "my": {
     "title": "マイカプセル",

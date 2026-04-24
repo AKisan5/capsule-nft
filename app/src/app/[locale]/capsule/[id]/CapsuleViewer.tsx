@@ -53,6 +53,8 @@ function TranslationSkeleton() {
 
 function RawCapsule({ capsule }: { capsule: CapsuleData }) {
   const t = useTranslations('capsule');
+  const tStep1 = useTranslations('create.step1');
+  const tStep2 = useTranslations('create.step2');
   const [open, setOpen] = useState(false);
 
   return (
@@ -79,14 +81,14 @@ function RawCapsule({ capsule }: { capsule: CapsuleData }) {
             </p>
             <div className="flex flex-wrap gap-1.5">
               <span className="rounded-full bg-primary/12 px-2.5 py-0.5 text-xs font-semibold text-primary">
-                {capsule.step1Category}
+                {tStep1(`categories.${capsule.step1Category}` as Parameters<typeof tStep1>[0])}
               </span>
               {capsule.step1Items.map((item) => (
                 <span
                   key={item}
                   className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground"
                 >
-                  {item}
+                  {tStep1(`subcategories.${item}` as Parameters<typeof tStep1>[0])}
                 </span>
               ))}
             </div>
@@ -105,10 +107,12 @@ function RawCapsule({ capsule }: { capsule: CapsuleData }) {
             </p>
             <div className="flex gap-1.5">
               <span className="rounded-full bg-primary/12 px-2.5 py-0.5 text-xs font-semibold text-primary">
-                {capsule.step2Polarity}
+                {tStep2(`polarity.${capsule.step2Polarity}` as Parameters<typeof tStep2>[0])}
               </span>
               <span className="rounded-full bg-primary/12 px-2.5 py-0.5 text-xs font-semibold text-primary">
-                {capsule.step2Subcategory}
+                {tStep2(
+                  `${capsule.step2Polarity === 'positive' ? 'subcategoryPositive' : 'subcategoryNegative'}.${capsule.step2Subcategory}.label` as Parameters<typeof tStep2>[0]
+                )}
               </span>
             </div>
             <p className="text-sm text-foreground/80 leading-relaxed">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, use, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { Link } from '@/i18n/navigation';
 import {
@@ -559,9 +559,11 @@ export default function CapsuleDashboard({
     return () => { cancelled = true; };
   }, [capsule, feedbacks]);
 
-  const mintDate = capsule
-    ? new Date(capsule.mintedAtMs).toLocaleDateString('ja-JP', {
-        year: 'numeric',
+  const locale = useLocale();
+  const dateObj = capsule ? new Date(capsule.mintedAtMs) : null;
+  const mintYear = dateObj ? String(dateObj.getFullYear()) : '';
+  const mintDayMonth = dateObj
+    ? dateObj.toLocaleDateString(locale === 'en' ? 'en-US' : 'ja-JP', {
         month: 'long',
         day: 'numeric',
       })
@@ -569,7 +571,7 @@ export default function CapsuleDashboard({
 
   return (
     <div className="min-h-screen pb-16">
-      <div className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-sm">
+      <div className="sticky top-12 z-10 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-lg items-center gap-3 px-4 py-4">
           <Link
             href="/my"
@@ -642,8 +644,8 @@ export default function CapsuleDashboard({
             />
             <StatCard
               label={t('statMintDate')}
-              value={mintDate.replace(/\d{4}年/, '')}
-              sub={mintDate.match(/\d{4}年/)?.[0] ?? ''}
+              value={mintDayMonth}
+              sub={mintYear}
             />
           </div>
 

@@ -8,28 +8,18 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { usePreMintStore } from '@/stores/preMint';
+import { type CategoryKey } from '@/lib/constants/categories';
 import { cn } from '@/lib/utils';
 
-// On-chain polarity values → translation keys
-const POLARITY_KEY: Record<string, 'positive' | 'negative'> = {
-  'ポジティブ': 'positive',
-  'ネガティブ': 'negative',
+const POLARITY_KEYS = ['positive', 'negative'] as const;
+type PolarityKey = typeof POLARITY_KEYS[number];
+
+const SUBCATEGORY_KEYS_MAP: Record<PolarityKey, readonly string[]> = {
+  positive: ['empathy', 'surprise'],
+  negative: ['unpleasant', 'boring'],
 };
 
-// On-chain subcategory values → translation path segments
-const SUBCATEGORY_KEY: Record<string, { group: 'subcategoryPositive' | 'subcategoryNegative'; key: 'empathy' | 'surprise' | 'unpleasant' | 'boring' }> = {
-  '共感': { group: 'subcategoryPositive', key: 'empathy'    },
-  '驚き': { group: 'subcategoryPositive', key: 'surprise'   },
-  '不快': { group: 'subcategoryNegative', key: 'unpleasant' },
-  '退屈': { group: 'subcategoryNegative', key: 'boring'     },
-};
-
-// On-chain values kept as-is; only display labels come from i18n
-const POLARITY_VALUES = ['ポジティブ', 'ネガティブ'] as const;
-const POSITIVE_SUB_VALUES = ['共感', '驚き'] as const;
-const NEGATIVE_SUB_VALUES = ['不快', '退屈'] as const;
-
-// ── サブコンポーネント ──────────────────────────────────────────────────────
+// ── Step1 summary ──────────────────────────────────────────────────────────
 
 function Step1Summary({
   category,
@@ -41,21 +31,24 @@ function Step1Summary({
   freeText: string;
 }) {
   const t = useTranslations('create.step2');
+  const tStep1 = useTranslations('create.step1');
   return (
     <div className="rounded-2xl border border-border bg-muted/40 px-5 py-4 space-y-2">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
         {t('step1Summary')}
       </p>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-primary/15 px-3 py-0.5 text-xs font-semibold text-primary">
-          {category}
-        </span>
+        {category && (
+          <span className="rounded-full bg-primary/15 px-3 py-0.5 text-xs font-semibold text-primary">
+            {tStep1(`categories.${category}` as Parameters<typeof tStep1>[0])}
+          </span>
+        )}
         {items.map((item) => (
           <span
             key={item}
             className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground"
           >
-            {item}
+            {tStep1(`subcategories.${item}` as Parameters<typeof tStep1>[0])}
           </span>
         ))}
       </div>
@@ -84,14 +77,17 @@ export default function Step2Page() {
   if (!photoBlobId || !step1.category) return null;
 
   const subcategoryValues =
-    step2.polarity === 'ポジティブ' ? POSITIVE_SUB_VALUES :
-    step2.polarity === 'ネガティブ' ? NEGATIVE_SUB_VALUES :
-    [];
+    (step2.polarity as PolarityKey) in SUBCATEGORY_KEYS_MAP
+      ? SUBCATEGORY_KEYS_MAP[step2.polarity as PolarityKey]
+      : [];
 
-  const promptKey = step2.subcategory ? SUBCATEGORY_KEY[step2.subcategory] : null;
-  const prompt = promptKey
-    ? t(`${promptKey.group}.${promptKey.key}.prompt` as Parameters<typeof t>[0])
-    : '';
+  const subcategoryGroup =
+    step2.polarity === 'positive' ? 'subcategoryPositive' : 'subcategoryNegative';
+
+  const prompt =
+    step2.subcategory && step2.polarity
+      ? t(`${subcategoryGroup}.${step2.subcategory}.prompt` as Parameters<typeof t>[0])
+      : '';
 
   const canProceed =
     !!step2.polarity && !!step2.subcategory && !!step2.connection.trim();
@@ -106,7 +102,6 @@ export default function Step2Page() {
 
   return (
     <div className="space-y-10">
-      {/* 戻る */}
       <button
         onClick={() => router.push('/create/step1')}
         className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -115,14 +110,13 @@ export default function Step2Page() {
         {tCommon('back')}
       </button>
 
-      {/* Step 1 サマリ */}
       <Step1Summary
         category={step1.category}
         items={step1.items}
         freeText={step1.freeText}
       />
 
-      {/* ── Polarity ── */}
+      {/* Polarity */}
       <div className="space-y-5">
         <div>
           <h1 className="text-xl font-bold leading-snug">{t('polarityTitle')}</h1>
@@ -134,12 +128,11 @@ export default function Step2Page() {
           onValueChange={handlePolarityChange}
           className="grid grid-cols-2 gap-3"
         >
-          {POLARITY_VALUES.map((pol) => {
-            const active = step2.polarity === pol;
-            const key = POLARITY_KEY[pol];
+          {POLARITY_KEYS.map((polKey) => {
+            const active = step2.polarity === polKey;
             return (
               <label
-                key={pol}
+                key={polKey}
                 className={cn(
                   'flex cursor-pointer flex-col items-center gap-2 rounded-2xl border px-4 py-5 transition-all select-none',
                   active
@@ -147,14 +140,14 @@ export default function Step2Page() {
                     : 'border-border bg-card hover:border-primary/40 hover:bg-card/80',
                 )}
               >
-                <RadioGroupItem value={pol} />
+                <RadioGroupItem value={polKey} />
                 <span
                   className={cn(
                     'text-base font-semibold transition-colors',
                     active ? 'text-primary' : 'text-foreground',
                   )}
                 >
-                  {t(`polarity.${key}`)}
+                  {t(`polarity.${polKey}` as Parameters<typeof t>[0])}
                 </span>
               </label>
             );
@@ -162,7 +155,7 @@ export default function Step2Page() {
         </RadioGroup>
       </div>
 
-      {/* ── Subcategory (動的) ── */}
+      {/* Subcategory */}
       {step2.polarity && (
         <div className="space-y-5">
           <div>
@@ -175,14 +168,13 @@ export default function Step2Page() {
             onValueChange={handleSubcategoryChange}
             className="gap-3"
           >
-            {subcategoryValues.map((val) => {
-              const info = SUBCATEGORY_KEY[val];
-              const selected = step2.subcategory === val;
-              const labelKey = `${info.group}.${info.key}.label` as Parameters<typeof t>[0];
-              const descKey  = `${info.group}.${info.key}.description` as Parameters<typeof t>[0];
+            {subcategoryValues.map((subKey) => {
+              const selected = step2.subcategory === subKey;
+              const labelKey = `${subcategoryGroup}.${subKey}.label` as Parameters<typeof t>[0];
+              const descKey  = `${subcategoryGroup}.${subKey}.description` as Parameters<typeof t>[0];
               return (
                 <label
-                  key={val}
+                  key={subKey}
                   className={cn(
                     'flex cursor-pointer items-start gap-3 rounded-xl border px-5 py-4 transition-all select-none',
                     selected
@@ -190,7 +182,7 @@ export default function Step2Page() {
                       : 'border-border bg-card hover:border-primary/40 hover:bg-card/80',
                   )}
                 >
-                  <RadioGroupItem value={val} className="mt-0.5 shrink-0" />
+                  <RadioGroupItem value={subKey} className="mt-0.5 shrink-0" />
                   <div>
                     <p
                       className={cn(
@@ -209,7 +201,7 @@ export default function Step2Page() {
         </div>
       )}
 
-      {/* ── Connection (動的) ── */}
+      {/* Connection */}
       {step2.subcategory && (
         <div className="space-y-4">
           <div>
@@ -230,7 +222,6 @@ export default function Step2Page() {
         </div>
       )}
 
-      {/* ── Next ── */}
       <Button
         className="w-full"
         size="lg"

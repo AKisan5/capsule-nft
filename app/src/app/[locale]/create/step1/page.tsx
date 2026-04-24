@@ -9,42 +9,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { usePreMintStore } from '@/stores/preMint';
-import { CATEGORIES, getCategoryByValue } from '@/lib/constants/categories';
+import { CATEGORY_KEYS, CATEGORY_SUBCATEGORY_KEYS, type CategoryKey } from '@/lib/constants/categories';
 import { cn } from '@/lib/utils';
-
-// Map on-chain Japanese values → translation keys (values must stay Japanese for on-chain compat)
-const CATEGORY_KEY: Record<string, string> = {
-  '入場・セレモニー': 'entrance',
-  '試合の展開':       'fight',
-  '結末':             'ending',
-  '試合後':           'afterFight',
-  '違和感・モヤモヤ': 'uneasy',
-};
-
-const SUBCATEGORY_KEY: Record<string, string> = {
-  '入場曲':             'entranceMusic',
-  '表情・佇まい':       'entranceFace',
-  '衣装':               'costume',
-  'コーナーやりとり':   'cornerTalk',
-  'フェイスオフ':       'faceOff',
-  'ラウンド戦略の変化': 'strategyShift',
-  '決定的な技':         'decisiveMove',
-  '耐えた瞬間':         'endurance',
-  'セコンドの声かけ':   'secondVoice',
-  '観客との相互作用':   'crowdInteraction',
-  '勝敗の決まり方':     'outcome',
-  '勝利/敗北の受け止め':'reaction',
-  '相手選手との握手':   'handshake',
-  '判定への反応':       'decision',
-  'インタビュー':       'interview',
-  '家族・セコンドとの抱擁': 'embrace',
-  '敗者の振る舞い':     'loserGrace',
-  '感情の爆発':         'emotionBurst',
-  '納得いかなかった判定': 'unsatisfied',
-  '期待と違った展開':   'unexpected',
-  '理解できなかった演出': 'unclear',
-  'まだ言葉にできない': 'indescribable',
-};
 
 export default function Step1Page() {
   const t = useTranslations('create.step1');
@@ -58,7 +24,8 @@ export default function Step1Page() {
 
   if (!photoBlobId) return null;
 
-  const selectedCategory = getCategoryByValue(step1.category);
+  const selectedSubcategoryKeys =
+    step1.category ? (CATEGORY_SUBCATEGORY_KEYS[step1.category as CategoryKey] ?? []) : [];
 
   const handleCategoryChange = (value: string) => {
     setStep1({ category: value, items: [] });
@@ -89,18 +56,17 @@ export default function Step1Page() {
         </h1>
       </div>
 
-      {/* ── カテゴリ選択 ── */}
+      {/* Category */}
       <RadioGroup
         value={step1.category}
         onValueChange={handleCategoryChange}
         className="gap-2"
       >
-        {CATEGORIES.map((cat) => {
-          const active = step1.category === cat.value;
-          const labelKey = CATEGORY_KEY[cat.value];
+        {CATEGORY_KEYS.map((catKey) => {
+          const active = step1.category === catKey;
           return (
             <label
-              key={cat.value}
+              key={catKey}
               className={cn(
                 'flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 transition-all select-none',
                 active
@@ -108,33 +74,32 @@ export default function Step1Page() {
                   : 'border-border bg-card hover:border-primary/40 hover:bg-card/80',
               )}
             >
-              <RadioGroupItem value={cat.value} />
+              <RadioGroupItem value={catKey} />
               <span
                 className={cn(
                   'text-sm font-medium transition-colors',
                   active ? 'text-primary' : 'text-foreground',
                 )}
               >
-                {labelKey ? t(`categories.${labelKey}`) : cat.label}
+                {t(`categories.${catKey}` as Parameters<typeof t>[0])}
               </span>
             </label>
           );
         })}
       </RadioGroup>
 
-      {/* ── サブカテゴリ (動的) ── */}
-      {selectedCategory && selectedCategory.subcategories.length > 0 && (
+      {/* Subcategory */}
+      {selectedSubcategoryKeys.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
             {t('subcategoryLabel')}
           </p>
           <div className="space-y-1.5">
-            {selectedCategory.subcategories.map((sub) => {
-              const checked = step1.items.includes(sub);
-              const subKey = SUBCATEGORY_KEY[sub];
+            {selectedSubcategoryKeys.map((subKey) => {
+              const checked = step1.items.includes(subKey);
               return (
                 <label
-                  key={sub}
+                  key={subKey}
                   className={cn(
                     'flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-all select-none',
                     checked
@@ -144,10 +109,10 @@ export default function Step1Page() {
                 >
                   <Checkbox
                     checked={checked}
-                    onCheckedChange={() => toggleItem(sub)}
+                    onCheckedChange={() => toggleItem(subKey)}
                   />
                   <span className="text-sm">
-                    {subKey ? t(`subcategories.${subKey}`) : sub}
+                    {t(`subcategories.${subKey}` as Parameters<typeof t>[0])}
                   </span>
                 </label>
               );
@@ -156,7 +121,7 @@ export default function Step1Page() {
         </div>
       )}
 
-      {/* ── 自由記述 ── */}
+      {/* Free text */}
       <div className="space-y-2">
         <label className="block text-sm font-medium">
           {t('freeTextLabel')}{' '}

@@ -9,7 +9,7 @@ export function PhotoBanner() {
   if (!photoPreviewUrl) return null;
 
   return (
-    <div className="sticky top-0 z-20 w-full">
+    <div className="sticky top-12 z-20 w-full">
       <div className="relative h-28 w-full overflow-hidden">
         <Image
           src={photoPreviewUrl}

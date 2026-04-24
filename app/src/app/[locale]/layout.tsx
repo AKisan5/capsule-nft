@@ -2,10 +2,11 @@ import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { Providers } from './providers';
+import { Header } from '@/components/Header';
 import '@mysten/dapp-kit/dist/index.css';
 import '../globals.css';
 
@@ -19,16 +20,23 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-  title: 'Capsule — ONE Championship Moment Vault',
-  description:
-    'ONE Championship 観戦で心が震えた一瞬を、写真と自分の言葉でカプセルに封じ、Sui オンチェーンに永久保存する DApp。',
-  openGraph: {
-    title: 'Capsule',
-    description: 'Mint your ONE Championship moment on Sui.',
-    type: 'website',
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'home' });
+  return {
+    title: 'Capsule — ONE Championship Moment Vault',
+    description: t('metaDescription'),
+    openGraph: {
+      title: 'Capsule',
+      description: 'Mint your ONE Championship moment on Sui.',
+      type: 'website',
+    },
+  };
+}
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -69,7 +77,10 @@ export default async function LocaleLayout({
         />
 
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Providers>{children}</Providers>
+          <Providers>
+            <Header />
+            {children}
+          </Providers>
         </NextIntlClientProvider>
 
         <Toaster

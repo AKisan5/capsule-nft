@@ -65,7 +65,7 @@ export async function uploadBlob(
   try {
     res = await fetch(url, { method, body });
   } catch (cause) {
-    throw new Error('Walrus publisher に接続できません', { cause });
+    throw new Error('Cannot reach Walrus publisher', { cause });
   }
 
   if (!res.ok) {
@@ -79,7 +79,7 @@ export async function uploadBlob(
   try {
     json = (await res.json()) as WalrusUploadResponse;
   } catch {
-    throw new Error('Walrus: レスポンスの JSON パースに失敗しました');
+    throw new Error('Walrus: failed to parse response JSON');
   }
 
   if ('newlyCreated' in json) {
@@ -91,7 +91,7 @@ export async function uploadBlob(
   if ('alreadyCertified' in json) {
     return { blobId: json.alreadyCertified.blobId };
   }
-  throw new Error('Walrus: 予期しないレスポンス形式です');
+  throw new Error('Walrus: unexpected response format');
 }
 
 /**
@@ -105,7 +105,7 @@ export async function downloadBlob(blobId: string): Promise<Uint8Array> {
   try {
     res = await fetch(url);
   } catch (cause) {
-    throw new Error('Walrus aggregator に接続できません', { cause });
+    throw new Error('Cannot reach Walrus aggregator', { cause });
   }
 
   if (!res.ok) {

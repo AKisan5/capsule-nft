@@ -19,25 +19,25 @@ export async function uploadImage(file: File): Promise<string> {
   try {
     webp = await convertToWebP(file);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : '画像の変換に失敗しました';
+    const msg = e instanceof Error ? e.message : 'Image conversion failed';
     toast.error(msg);
     throw e;
   }
 
   if (webp.size > MAX_BYTES) {
     const mb = (webp.size / 1024 / 1024).toFixed(1);
-    const msg = `画像が大きすぎます (${mb} MB)。2 MB 以下にしてください。`;
+    const msg = `Image too large (${mb} MB). Please use a file under 2 MB.`;
     toast.error(msg);
     throw new Error(msg);
   }
 
-  const toastId = toast.loading('写真をアップロード中…');
+  const toastId = toast.loading('Uploading photo…');
   try {
     const { blobId } = await uploadBlob(webp);
-    toast.success('写真のアップロード完了', { id: toastId });
+    toast.success('Photo uploaded', { id: toastId });
     return blobId;
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'アップロードに失敗しました';
+    const msg = e instanceof Error ? e.message : 'Upload failed';
     toast.error(msg, { id: toastId });
     throw e;
   }
@@ -71,7 +71,7 @@ function convertToWebP(file: File): Promise<Blob> {
 
       const ctx = canvas.getContext('2d');
       if (!ctx) {
-        reject(new Error('Canvas context が取得できません'));
+        reject(new Error('Failed to get canvas context'));
         return;
       }
       ctx.drawImage(img, 0, 0);
@@ -81,7 +81,7 @@ function convertToWebP(file: File): Promise<Blob> {
           if (blob) {
             resolve(blob);
           } else {
-            reject(new Error('WebP への変換に失敗しました'));
+            reject(new Error('WebP conversion failed'));
           }
         },
         'image/webp',
@@ -91,7 +91,7 @@ function convertToWebP(file: File): Promise<Blob> {
 
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error('画像の読み込みに失敗しました'));
+      reject(new Error('Failed to load image'));
     };
 
     img.src = objectUrl;

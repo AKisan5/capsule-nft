@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   } catch (cause) {
     console.error('[api/walrus/upload] publisher unreachable', cause);
     return NextResponse.json(
-      { error: 'Walrus publisher に接続できません' },
+      { error: 'Cannot reach Walrus publisher' },
       { status: 502 },
     );
   }
