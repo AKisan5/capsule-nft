@@ -1,7 +1,7 @@
 // Capsule + feedback fetching utilities (client-side, uses SuiJsonRpcClient directly)
 
 import { getSuiClient, CAPSULE_PACKAGE_ID } from './client';
-import type { CapsuleData } from '@/app/capsule/[id]/page';
+import type { CapsuleData } from '@/app/[locale]/capsule/[id]/page';
 
 // ── Stats types ───────────────────────────────────────────────────────────────
 

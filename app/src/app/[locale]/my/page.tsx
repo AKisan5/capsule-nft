@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter } from '@/i18n/navigation';
+import { Link } from '@/i18n/navigation';
 import { Plus, TrendingUp, Eye } from 'lucide-react';
 import { useCurrentAccount } from '@mysten/dapp-kit';
 import { getBlobUrl } from '@/lib/walrus/client';
@@ -11,7 +11,7 @@ import {
   fetchCapsuleStats,
   type CapsuleWithStats,
 } from '@/lib/sui/capsules';
-import type { CapsuleData } from '@/app/capsule/[id]/page';
+import type { CapsuleData } from '@/app/[locale]/capsule/[id]/page';
 
 // ── Loading skeleton ───────────────────────────────────────────────────────────
 

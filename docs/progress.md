@@ -1,5 +1,34 @@
 # Progress Log
 
+## 2026-04-24 — Phase E1: [locale] セグメント移行完了
+
+### ページ移動
+- `src/app/(すべてのページ)` → `src/app/[locale]/` 配下に移動
+- `layout.tsx` を最小 pass-through ルートレイアウト + フル locale レイアウトに分割
+
+### 更新
+- `app/src/app/layout.tsx` — `return children` のみの最小 root layout
+- `app/src/app/page.tsx` — `redirect('/ja')` root redirect
+- `app/src/app/[locale]/layout.tsx` — `NextIntlClientProvider` / fonts / Toaster を含むフル layout
+- `app/src/app/[locale]/page.tsx` — ホームページ
+- `app/src/i18n/request.ts` — Turbopack の dynamic import 制限を回避するため明示的 conditional import に変更
+- `app/src/components/create/StepProgress.tsx` — `next/navigation` → `@/i18n/navigation`
+- `app/src/app/[locale]/create/review/page.tsx` — mint 後 IDB ドラフト削除 + インライン成功画面
+- すべての `Link/useRouter/usePathname` を `@/i18n/navigation` に統一
+
+### バグ修正
+- `app/messages/` への相対パスが `../../../` (誤) → `../../` (正) に修正
+
+### 動作確認
+- `pnpm tsc --noEmit` エラーなし
+- `GET /` → `307 /ja`
+- `GET /ja` → 200
+- `GET /ja/login` → 200
+- `GET /en/login` → 200
+
+### 次フェーズ
+- `ja.json` / `en.json` にキーを追加し、ハードコードされた日本語文字列を `useTranslations()` に置換
+
 ## 2026-04-24 — Phase E1: i18n 基盤ファイル作成完了
 
 ### インストール

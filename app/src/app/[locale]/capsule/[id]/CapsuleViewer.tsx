@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronDown, ChevronUp, Copy, Check, ExternalLink, Share2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrentAccount } from '@mysten/dapp-kit';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { getBlobUrl } from '@/lib/walrus/client';
 import {
   getViewerProfile,

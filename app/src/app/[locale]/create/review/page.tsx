@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { ChevronLeft, AlertTriangle, Copy, Check, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
