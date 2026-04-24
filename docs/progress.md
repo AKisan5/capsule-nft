@@ -1,5 +1,30 @@
 # Progress Log
 
+## 2026-04-24 — Phase E1: i18n 基盤ファイル作成完了
+
+### インストール
+- `next-intl@4.9.1` を `pnpm add next-intl` でインストール済み
+
+### 新規作成
+- `app/src/i18n/routing.ts` — `defineRouting({ locales: ['ja','en'], defaultLocale: 'ja', localePrefix: 'always' })`
+- `app/src/i18n/navigation.ts` — `createNavigation(routing)` でロケール対応 Link/useRouter/usePathname をエクスポート
+- `app/src/i18n/request.ts` — サーバー側メッセージロード (`getRequestConfig`)
+- `app/src/middleware.ts` — `createMiddleware(routing)` でロケール自動リダイレクト
+- `app/messages/ja.json` — 日本語カタログ空箱
+- `app/messages/en.json` — 英語カタログ空箱
+
+### 更新
+- `app/next.config.ts` — `createNextIntlPlugin('./src/i18n/request.ts')` でラップ
+
+### 動作確認
+- `pnpm tsc --noEmit` エラーなし
+- `GET /` → `307 /ja` (ミドルウェア正常動作)
+- `GET /ja` → 404 (期待通り: ページ移動は次フェーズ)
+
+### 次フェーズ
+- `src/app/` 配下のページを `src/app/[locale]/` に移動
+- `ja.json` / `en.json` にキーを追加し、ハードコードされた日本語文字列を `useTranslations()` に置換
+
 ## 2026-04-24 — zkLogin 削除・Wallet Connect 一本化完了
 
 ### 削除したファイル
