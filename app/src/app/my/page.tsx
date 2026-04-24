@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, TrendingUp, Eye } from 'lucide-react';
-import { useAuthStore } from '@/stores/auth';
+import { useCurrentAccount } from '@mysten/dapp-kit';
 import { getBlobUrl } from '@/lib/walrus/client';
 import {
   fetchOwnedCapsules,
@@ -44,7 +44,6 @@ function CapsuleCard({ capsule, stats }: { capsule: CapsuleData; stats: CapsuleW
       href={`/my/capsule/${capsule.id}`}
       className="group overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
     >
-      {/* Thumbnail */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         {capsule.photoBlobId ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -59,7 +58,6 @@ function CapsuleCard({ capsule, stats }: { capsule: CapsuleData; stats: CapsuleW
           </div>
         )}
 
-        {/* Badges overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
           {capsule.fighterTag && (
@@ -70,7 +68,6 @@ function CapsuleCard({ capsule, stats }: { capsule: CapsuleData; stats: CapsuleW
         </div>
       </div>
 
-      {/* Meta */}
       <div className="space-y-2 p-3">
         <div>
           <p className="truncate text-sm font-medium leading-tight">
@@ -79,7 +76,6 @@ function CapsuleCard({ capsule, stats }: { capsule: CapsuleData; stats: CapsuleW
           <p className="text-xs text-muted-foreground">{date}</p>
         </div>
 
-        {/* Stats row */}
         <div className="flex items-center gap-3 pt-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Eye className="size-3" />
@@ -131,7 +127,7 @@ function EmptyState() {
 
 export default function MyPage() {
   const router = useRouter();
-  const { status, address } = useAuthStore();
+  const account = useCurrentAccount();
 
   const [items, setItems] = useState<CapsuleWithStats[]>([]);
   const [loading, setLoading] = useState(true);
@@ -139,27 +135,24 @@ export default function MyPage() {
 
   // Auth guard
   useEffect(() => {
-    if (status === 'idle') return; // still initializing
-    if (status !== 'authenticated') {
-      router.replace('/login');
-    }
-  }, [status, router]);
+    if (account === undefined) return; // dapp-kit hydrating
+    if (!account) router.replace('/login');
+  }, [account, router]);
 
   // Fetch capsules + stats
   useEffect(() => {
-    if (!address) return;
+    if (!account?.address) return;
 
+    const address = account.address;
     let cancelled = false;
 
     async function load() {
       setLoading(true);
       setError(null);
       try {
-        const capsules = await fetchOwnedCapsules(address!);
-
+        const capsules = await fetchOwnedCapsules(address);
         if (cancelled) return;
 
-        // Show capsules immediately, then hydrate stats in parallel
         const withEmptyStats: CapsuleWithStats[] = capsules.map((capsule) => ({
           capsule,
           stats: {
@@ -173,7 +166,6 @@ export default function MyPage() {
         setItems(withEmptyStats);
         setLoading(false);
 
-        // Fetch stats for all capsules in parallel
         const statsResults = await Promise.allSettled(
           capsules.map((c) => fetchCapsuleStats(c.id)),
         );
@@ -200,9 +192,7 @@ export default function MyPage() {
 
     load();
     return () => { cancelled = true; };
-  }, [address]);
-
-  // ── Aggregate totals ──────────────────────────────────────────────────────
+  }, [account?.address]);
 
   const totalViews = items.reduce((s, i) => s + i.stats.totalViews, 0);
   const avgRate =
@@ -212,13 +202,10 @@ export default function MyPage() {
         )
       : 0;
 
-  // ── Render ────────────────────────────────────────────────────────────────
-
-  if (status !== 'authenticated' && status !== 'idle') return null;
+  if (!account) return null;
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
       <div className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4">
           <div>
@@ -239,7 +226,6 @@ export default function MyPage() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="mx-auto max-w-2xl px-4 py-6">
         {loading ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

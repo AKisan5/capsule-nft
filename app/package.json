@@ -17,7 +17,6 @@
     "@mysten/dapp-kit": "^1.0.4",
     "@mysten/seal": "1.1.1",
     "@mysten/sui": "^2.16.0",
-    "@mysten/zklogin": "^0.8.1",
     "@tanstack/react-query": "^5.99.2",
     "@types/recharts": "^2.0.1",
     "class-variance-authority": "^0.7.1",

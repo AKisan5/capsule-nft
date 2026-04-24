@@ -24,7 +24,7 @@ import {
   LockKeyhole,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAuthStore } from '@/stores/auth';
+import { useCurrentAccount } from '@mysten/dapp-kit';
 import { getBlobUrl, downloadBlob } from '@/lib/walrus/client';
 import {
   fetchCapsuleById,
@@ -444,7 +444,8 @@ export default function CapsuleDashboard({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { status, address, session } = useAuthStore();
+  const account = useCurrentAccount();
+  const address = account?.address ?? null;
 
   const [capsule, setCapsule] = useState<CapsuleData | null>(null);
   const [stats, setStats] = useState<CapsuleStats | null>(null);
@@ -457,9 +458,9 @@ export default function CapsuleDashboard({
 
   // Auth guard
   useEffect(() => {
-    if (status === 'idle') return;
-    if (status !== 'authenticated') router.replace('/login');
-  }, [status, router]);
+    if (account === undefined) return; // dapp-kit hydrating
+    if (!account) router.replace('/login');
+  }, [account, router]);
 
   // ── Decrypt a single feedback blob ────────────────────────────────────────
 
@@ -469,72 +470,14 @@ export default function CapsuleDashboard({
 
       try {
         const bytes = await downloadBlob(fb.walrusBlobId);
-
-        // If Seal is not configured or no session, try raw UTF-8 parse (unencrypted dev data)
-        if (!session || !process.env.NEXT_PUBLIC_SEAL_KEY_SERVER_IDS) {
-          const text = new TextDecoder().decode(bytes);
-          return { ...fb, text, decoding: 'ok' };
-        }
-
-        // Full Seal decryption path
-        const { SealClient, SessionKey } = await import('@mysten/seal');
-        const { SuiJsonRpcClient } = await import('@mysten/sui/jsonRpc');
-        const { Ed25519Keypair } = await import('@mysten/sui/keypairs/ed25519');
-        const { decodeSuiPrivateKey } = await import('@mysten/sui/cryptography');
-        const { NETWORK, CAPSULE_PACKAGE_ID } = await import('@/lib/sui/client');
-        const { fromHex } = await import('@mysten/sui/utils');
-        const { Transaction } = await import('@mysten/sui/transactions');
-
-        const rpcUrl =
-          NETWORK === 'testnet'
-            ? 'https://fullnode.testnet.sui.io:443'
-            : 'https://fullnode.devnet.sui.io:443';
-        const suiClient = new SuiJsonRpcClient({ url: rpcUrl, network: NETWORK });
-
-        const keyServerIds = (process.env.NEXT_PUBLIC_SEAL_KEY_SERVER_IDS ?? '')
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean);
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const sealClient = new SealClient({
-          suiClient: suiClient as any,
-          serverConfigs: keyServerIds.map((oid) => ({ objectId: oid, weight: 1 })),
-        });
-
-        const { secretKey: skBytes } = decodeSuiPrivateKey(session.ephemeralSecretKey);
-        const keypair = Ed25519Keypair.fromSecretKey(skBytes);
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const sk = await SessionKey.create({
-          address: session.address,
-          packageId: CAPSULE_PACKAGE_ID,
-          ttlMin: 10,
-          suiClient: suiClient as any,
-        });
-        const { signature } = await keypair.signPersonalMessage(sk.getPersonalMessage());
-        await sk.setPersonalMessageSignature(signature);
-
-        // PTB: call seal_approve with the seal_policy_id as id
-        const policyIdBytes = fromHex(
-          fb.sealPolicyId.startsWith('0x') ? fb.sealPolicyId.slice(2) : fb.sealPolicyId,
-        );
-        const tx = new Transaction();
-        tx.moveCall({
-          target: `${CAPSULE_PACKAGE_ID}::feedback::seal_approve`,
-          arguments: [tx.pure.vector('u8', Array.from(policyIdBytes))],
-        });
-        tx.setSender(session.address);
-        const txBytes = await tx.build({ client: suiClient });
-
-        const decrypted = await sealClient.decrypt({ data: bytes, sessionKey: sk, txBytes });
-        const text = new TextDecoder().decode(decrypted);
+        // Seal key servers not yet configured — treat blobs as raw UTF-8
+        const text = new TextDecoder().decode(bytes);
         return { ...fb, text, decoding: 'ok' };
       } catch {
         return { ...fb, decoding: 'failed' };
       }
     },
-    [session],
+    [],
   );
 
   // ── Main data fetch ───────────────────────────────────────────────────────

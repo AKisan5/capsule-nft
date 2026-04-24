@@ -1,33 +1,28 @@
 'use client';
 
 // Viewer profile — encrypted with @mysten/seal, stored on Walrus, registered on-chain.
-// Falls back to localStorage when Seal is not configured (dev environments).
+// Falls back to localStorage when Seal is not configured.
 
 import { SealClient, SessionKey, type SealCompatibleClient } from '@mysten/seal';
 import { Transaction } from '@mysten/sui/transactions';
-import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import { decodeSuiPrivateKey } from '@mysten/sui/cryptography';
 import { fromHex } from '@mysten/sui/utils';
 import { SuiJsonRpcClient } from '@mysten/sui/jsonRpc';
 import { uploadBlob, downloadBlob } from '@/lib/walrus/client';
 import { NETWORK, CAPSULE_PACKAGE_ID } from '@/lib/sui/client';
-import type { ZkLoginSession } from '@/lib/sui/zklogin';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-/** 5-level scale shared by Q1, Q2, Q3 */
 export type FiveLevel = '1' | '2' | '3' | '4' | '5';
 
 export interface ViewerProfile {
-  /** Q1: この選手についての知識量 (1=全く知らない → 5=熟知している) */
   fighterKnowledge: FiveLevel;
-  /** Q2: この選手への印象 (1=無関心 → 5=大ファン) */
   fighterImpression: FiveLevel;
-  /** Q3: ONE Championship / MMA 全般の知識 (1=初めて → 5=マニア) */
   mmaKnowledge: FiveLevel;
-  /** Q4: 自由記述 (任意) */
   selfIntro?: string;
 }
+
+// signPersonalMessage callback shape — matches dapp-kit's useSignPersonalMessage
+export type SignPersonalMessageFn = (input: { message: Uint8Array }) => Promise<{ signature: string }>;
 
 // ── Env config ─────────────────────────────────────────────────────────────────
 
@@ -62,16 +57,12 @@ function makeSuiClient(): SuiJsonRpcClient {
   return new SuiJsonRpcClient({ url, network: NETWORK });
 }
 
-// SuiJsonRpcClient extends BaseClient which has `core: CoreClient` — structurally
-// compatible with SealCompatibleClient at runtime.
 function asSealClient(suiClient: SuiJsonRpcClient): SealCompatibleClient {
   return suiClient as unknown as SealCompatibleClient;
 }
 
 // ── Seal identity ──────────────────────────────────────────────────────────────
 
-// The Move seal_approve uses `sui::bcs::to_bytes(&ctx.sender())` = 32 raw bytes.
-// Seal's `id` param is a hex string (without 0x prefix, 64 chars).
 function sealId(address: string): string {
   const stripped = address.startsWith('0x') ? address.slice(2) : address;
   return stripped.padStart(64, '0');
@@ -104,7 +95,7 @@ function localSet(viewer: string, profile: ViewerProfile): void {
 async function encryptAndUpload(
   viewer: string,
   profile: ViewerProfile,
-  session: ZkLoginSession,
+  signPersonalMessage: SignPersonalMessageFn,
 ): Promise<void> {
   const suiClient = makeSuiClient();
   const keyServerIds = getKeyServerIds();
@@ -125,7 +116,6 @@ async function encryptAndUpload(
 
   const { blobId } = await uploadBlob(encryptedObject, 5);
 
-  // Register viewer → blobId on-chain
   const tx = new Transaction();
   tx.moveCall({
     target: `${CAPSULE_PACKAGE_ID}::profile_registry::register_profile`,
@@ -135,8 +125,8 @@ async function encryptAndUpload(
     ],
   });
 
-  const { zkLoginSignAndExecute } = await import('@/lib/sui/zklogin');
-  await zkLoginSignAndExecute(tx, session);
+  // On-chain registration requires a wallet TX — deferred until wallet TX support is wired
+  void tx;
 }
 
 // ── On-chain blobId lookup ─────────────────────────────────────────────────────
@@ -147,7 +137,6 @@ async function fetchBlobIdOnChain(viewer: string): Promise<string | null> {
 
   const suiClient = makeSuiClient();
   try {
-    // The profiles field is a Sui Table — look up via dynamic field
     const res = await suiClient.getObject({
       id: registryId,
       options: { showContent: true },
@@ -178,7 +167,7 @@ async function fetchBlobIdOnChain(viewer: string): Promise<string | null> {
 async function decryptFromWalrus(
   blobId: string,
   viewer: string,
-  session: ZkLoginSession,
+  signPersonalMessage: SignPersonalMessageFn,
 ): Promise<ViewerProfile> {
   const suiClient = makeSuiClient();
   const keyServerIds = getKeyServerIds();
@@ -190,9 +179,6 @@ async function decryptFromWalrus(
 
   const encryptedBytes = await downloadBlob(blobId);
 
-  const { secretKey: secretKeyBytes } = decodeSuiPrivateKey(session.ephemeralSecretKey);
-  const ephemeralKeypair = Ed25519Keypair.fromSecretKey(secretKeyBytes);
-
   const sessionKey = await SessionKey.create({
     address: viewer,
     packageId: CAPSULE_PACKAGE_ID,
@@ -200,12 +186,9 @@ async function decryptFromWalrus(
     suiClient: asSealClient(suiClient),
   });
 
-  const { signature } = await ephemeralKeypair.signPersonalMessage(
-    sessionKey.getPersonalMessage(),
-  );
+  const { signature } = await signPersonalMessage({ message: sessionKey.getPersonalMessage() });
   await sessionKey.setPersonalMessageSignature(signature);
 
-  // PTB calling seal_approve so Seal key servers can verify access
   const idBytes = fromHex(sealId(viewer));
   const tx = new Transaction();
   tx.moveCall({
@@ -226,53 +209,41 @@ async function decryptFromWalrus(
 
 // ── Public API ─────────────────────────────────────────────────────────────────
 
-/**
- * Synchronous read from localStorage (fast path for initial render).
- * Keyed by viewer address so the same person gets one profile across all capsules.
- */
 export function getViewerProfile(viewer: string | null): ViewerProfile | null {
   if (typeof window === 'undefined' || !viewer) return null;
   return localGet(viewer);
 }
 
-/**
- * Save profile to localStorage immediately, then async Seal+Walrus if configured.
- * @param session Required for Seal path; omit to force localStorage-only.
- */
 export async function saveViewerProfile(
   viewer: string | null,
   profile: ViewerProfile,
-  session?: ZkLoginSession | null,
+  signPersonalMessage?: SignPersonalMessageFn | null,
 ): Promise<void> {
   if (!viewer) return;
 
   localSet(viewer, profile);
 
-  if (!sealEnabled() || !session) return;
+  if (!sealEnabled() || !signPersonalMessage) return;
 
   try {
-    await encryptAndUpload(viewer, profile, session);
+    await encryptAndUpload(viewer, profile, signPersonalMessage);
   } catch (err) {
     console.warn('[profile] Seal upload failed, using localStorage only:', err);
   }
 }
 
-/**
- * Full async read: checks on-chain registry → Walrus → Seal decrypt.
- * Falls back to localStorage if Seal is not configured or fails.
- */
 export async function readProfile(
   viewer: string | null,
-  session?: ZkLoginSession | null,
+  signPersonalMessage?: SignPersonalMessageFn | null,
 ): Promise<ViewerProfile | null> {
   if (typeof window === 'undefined' || !viewer) return null;
 
-  if (!sealEnabled() || !session) return localGet(viewer);
+  if (!sealEnabled() || !signPersonalMessage) return localGet(viewer);
 
   try {
     const blobId = await fetchBlobIdOnChain(viewer);
     if (!blobId) return localGet(viewer);
-    return await decryptFromWalrus(blobId, viewer, session);
+    return await decryptFromWalrus(blobId, viewer, signPersonalMessage);
   } catch (err) {
     console.warn('[profile] Seal read failed, falling back to localStorage:', err);
     return localGet(viewer);

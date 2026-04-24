@@ -73,12 +73,14 @@ async function fetchCapsule(objectId: string): Promise<CapsuleData | null> {
 
 export default async function CapsulePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ minted?: string }>;
 }) {
-  const { id } = await params;
+  const [{ id }, { minted }] = await Promise.all([params, searchParams]);
   const capsule = await fetchCapsule(id);
   if (!capsule) notFound();
 
-  return <CapsuleViewer capsule={capsule} />;
+  return <CapsuleViewer capsule={capsule} justMinted={minted === '1'} />;
 }

@@ -42,6 +42,7 @@ export interface UploadResult {
 
 /**
  * Blob を Walrus Publisher にアップロードする。
+ * ブラウザから呼ぶ場合は CORS 回避のため /api/walrus/upload 経由でプロキシする。
  * @param data アップロードするバイナリデータ
  * @param epochs 保存 epoch 数 (デフォルト: 5)
  */
@@ -49,16 +50,20 @@ export async function uploadBlob(
   data: Blob | Uint8Array,
   epochs = 5,
 ): Promise<UploadResult> {
-  // Uint8Array<ArrayBufferLike> → Blob: structuredClone でコピーしてから渡す
   const body =
-    data instanceof Uint8Array
-      ? new Blob([new Uint8Array(data)])
-      : data;
-  const url = `${getPublisherUrl()}/v1/blobs?epochs=${epochs}`;
+    data instanceof Uint8Array ? new Blob([new Uint8Array(data)]) : data;
+
+  // ブラウザ環境ではサーバー側プロキシ経由 (CORS 対策)
+  // Node 環境 (Route Handler など) では直接 publisher に投げる
+  const isBrowser = typeof window !== 'undefined';
+  const url = isBrowser
+    ? `/api/walrus/upload?epochs=${epochs}`
+    : `${getPublisherUrl()}/v1/blobs?epochs=${epochs}`;
+  const method = isBrowser ? 'POST' : 'PUT';
 
   let res: Response;
   try {
-    res = await fetch(url, { method: 'PUT', body });
+    res = await fetch(url, { method, body });
   } catch (cause) {
     throw new Error('Walrus publisher に接続できません', { cause });
   }

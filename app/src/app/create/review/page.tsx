@@ -4,11 +4,29 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import { usePreMintStore } from '@/stores/preMint';
-import { useAuthStore } from '@/stores/auth';
-import { mintCapsule, mintDemo } from '@/lib/sui/mint';
-import { NETWORK } from '@/lib/sui/client';
+import { mintDemo, buildMintTx, extractCapsuleObjectId } from '@/lib/sui/mint';
+import { NETWORK, getSuiClient } from '@/lib/sui/client';
 import { cn } from '@/lib/utils';
+
+// ── IndexedDB draft clear (step3 と同じ DB) ────────────────────────────────
+
+async function clearStep3Draft(): Promise<void> {
+  try {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const req = indexedDB.open('capsule_draft', 1);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    await new Promise<void>((res, rej) => {
+      const tx = db.transaction('step3', 'readwrite');
+      tx.objectStore('step3').delete('current');
+      tx.oncomplete = () => res();
+      tx.onerror = () => rej(tx.error);
+    });
+  } catch { /* ignore */ }
+}
 
 // ── 定数 ──────────────────────────────────────────────────────────────────
 
@@ -219,7 +237,15 @@ function HoldToMintButton({
 export default function ReviewPage() {
   const router = useRouter();
   const store = usePreMintStore();
-  const { session } = useAuthStore();
+  const currentAccount = useCurrentAccount();
+  const { mutateAsync: walletSignAndExecute } = useSignAndExecuteTransaction({
+    execute: ({ bytes, signature }) =>
+      getSuiClient().executeTransactionBlock({
+        transactionBlock: bytes,
+        signature,
+        options: { showEffects: true, showObjectChanges: true },
+      }),
+  });
 
   const {
     photoBlobId,
@@ -234,10 +260,12 @@ export default function ReviewPage() {
 
   const [minting, setMinting] = useState(false);
   const [mintError, setMintError] = useState<string | null>(null);
+  const mintedRef = useRef(false);
 
   // ── ガード ──────────────────────────────────────────────────────────────
 
   useEffect(() => {
+    if (mintedRef.current) return;
     if (!photoBlobId) router.replace('/create/photo');
     else if (!step1.category || !step1.freeText.trim()) router.replace('/create/step1');
     else if (!step2.polarity || !step2.subcategory || !step2.connection.trim())
@@ -270,11 +298,18 @@ export default function ReviewPage() {
     setMintError(null);
     try {
       const mintInput = { photoBlobId, step1, step2, step3, eventName, fighterTag };
-      const objectId = session
-        ? await mintCapsule(mintInput, session)
-        : await mintDemo(mintInput);
+      let objectId: string;
+      if (currentAccount) {
+        const tx = buildMintTx(mintInput);
+        const result = await walletSignAndExecute({ transaction: tx, chain: `sui:${NETWORK}` });
+        objectId = extractCapsuleObjectId(result, currentAccount.address);
+      } else {
+        objectId = await mintDemo(mintInput);
+      }
+      mintedRef.current = true;
+      await clearStep3Draft();
       reset();
-      router.push(`/capsule/${objectId}`);
+      router.push(`/capsule/${objectId}?minted=1`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : '不明なエラーが発生しました';
       setMintError(msg);
@@ -393,13 +428,15 @@ export default function ReviewPage() {
         </div>
       </div>
 
-      {/* ── ガス代 / デモバナー ── */}
-      {session ? (
+      {/* ── ガス代 / 認証バナー ── */}
+      {currentAccount ? (
         <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <span className="rounded-full bg-primary/10 px-2.5 py-1 font-medium text-primary text-[11px]">
-            Sponsored
+          <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 font-medium text-emerald-400 text-[11px]">
+            ウォレット接続済み
           </span>
-          <span>ガス代は運営負担です。SUI は不要。</span>
+          <span className="font-mono">
+            {currentAccount.address.slice(0, 6)}…{currentAccount.address.slice(-4)}
+          </span>
         </div>
       ) : (
         <div className="flex items-center justify-center gap-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-xs text-yellow-700 dark:text-yellow-400">
