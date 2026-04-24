@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, AlertTriangle, Copy, Check, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import { usePreMintStore } from '@/stores/preMint';
@@ -105,6 +105,96 @@ function Chip({ label }: { label: string }) {
     <span className="inline-block rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
       {label}
     </span>
+  );
+}
+
+// ── ミント成功画面 ────────────────────────────────────────────────────────────
+
+function MintSuccessScreen({
+  objectId,
+  onNewCapsule,
+  onMyPage,
+}: {
+  objectId: string;
+  onNewCapsule: () => void;
+  onMyPage: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const explorerUrl =
+    NETWORK === 'testnet'
+      ? `https://suiscan.xyz/testnet/object/${objectId}`
+      : `https://suiscan.xyz/devnet/object/${objectId}`;
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(objectId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="flex min-h-[80vh] flex-col items-center justify-center gap-8 px-4 text-center">
+      {/* アイコン */}
+      <div className="flex size-24 items-center justify-center rounded-full bg-gradient-to-br from-purple-500/30 to-indigo-500/20 ring-1 ring-purple-400/40 text-5xl">
+        💊
+      </div>
+
+      {/* ヘッドライン */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">カプセル完成！</h1>
+        <p className="text-muted-foreground text-sm">
+          あなたの感動が Sui チェーンに永久保存されました
+        </p>
+      </div>
+
+      {/* Object ID */}
+      <div className="w-full max-w-sm rounded-xl border border-border bg-card px-4 py-3 text-left space-y-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Object ID
+        </p>
+        <p className="font-mono text-xs text-foreground/70 break-all leading-relaxed">
+          {objectId}
+        </p>
+      </div>
+
+      {/* アクション */}
+      <div className="w-full max-w-sm space-y-3">
+        <button
+          onClick={handleCopy}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
+        >
+          {copied ? (
+            <Check className="size-4 text-primary" />
+          ) : (
+            <Copy className="size-4" />
+          )}
+          {copied ? 'コピーしました' : 'Object ID をコピー'}
+        </button>
+
+        <a
+          href={explorerUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
+        >
+          <ExternalLink className="size-4" />
+          Explorer で確認
+        </a>
+
+        <button
+          onClick={onMyPage}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
+        >
+          マイページへ
+        </button>
+
+        <button
+          onClick={onNewCapsule}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          新しいカプセルを作る
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -260,18 +350,19 @@ export default function ReviewPage() {
 
   const [minting, setMinting] = useState(false);
   const [mintError, setMintError] = useState<string | null>(null);
-  const mintedRef = useRef(false);
+  const [mintedObjectId, setMintedObjectId] = useState<string | null>(null);
 
-  // ── ガード ──────────────────────────────────────────────────────────────
+  // ── ガード (成功後は動かさない) ─────────────────────────────────────────
 
   useEffect(() => {
-    if (mintedRef.current) return;
+    if (mintedObjectId) return;
     if (!photoBlobId) router.replace('/create/photo');
     else if (!step1.category || !step1.freeText.trim()) router.replace('/create/step1');
     else if (!step2.polarity || !step2.subcategory || !step2.connection.trim())
       router.replace('/create/step2');
     else if (!step3.memo.trim()) router.replace('/create/step3');
   }, [
+    mintedObjectId,
     photoBlobId,
     step1.category,
     step1.freeText,
@@ -281,6 +372,26 @@ export default function ReviewPage() {
     step3.memo,
     router,
   ]);
+
+  // ── ミント成功画面 ──────────────────────────────────────────────────────
+
+  if (mintedObjectId) {
+    return (
+      <MintSuccessScreen
+        objectId={mintedObjectId}
+        onNewCapsule={async () => {
+          await clearStep3Draft();
+          reset();
+          router.push('/create/photo');
+        }}
+        onMyPage={async () => {
+          await clearStep3Draft();
+          reset();
+          router.push('/my');
+        }}
+      />
+    );
+  }
 
   if (
     !photoBlobId ||
@@ -306,10 +417,7 @@ export default function ReviewPage() {
       } else {
         objectId = await mintDemo(mintInput);
       }
-      mintedRef.current = true;
-      await clearStep3Draft();
-      reset();
-      router.push(`/capsule/${objectId}?minted=1`);
+      setMintedObjectId(objectId);
     } catch (err) {
       const msg = err instanceof Error ? err.message : '不明なエラーが発生しました';
       setMintError(msg);
