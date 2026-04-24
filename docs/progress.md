@@ -1,5 +1,34 @@
 # Progress Log
 
+## 2026-04-24 — Phase E2: メッセージカタログ作成完了
+
+### 作成
+- `app/messages/ja.json` — 234 キー、全画面の日本語文言を網羅
+- `app/messages/en.json` — 同一構造の英語版 (キー完全一致)
+
+### キー構造
+```
+common / header / login / home / my
+create.stepLabels / create.photo / create.step1 / create.step2 / create.step3 / create.review
+capsule / capsule.profileModal
+dashboard
+errors
+```
+
+### カバレッジ
+- ホーム・ログイン・マイページ
+- 作成フロー全 5 ステップ (photo / step1 / step2 / step3 / review)
+- カプセル閲覧 (翻訳スケルトン・原液トグル・URL コピー・ミント成功オーバーレイ)
+- ビュアープロフィールモーダル (15 オプション × label/desc)
+- ダッシュボード (my/capsule/[id]) 全ラベル
+- エラーメッセージ
+
+### 確認
+- `node` で ja.json / en.json のキー一致チェック → 差分 0
+
+### 次フェーズ (E3)
+- 各コンポーネントに `useTranslations()` を導入してハードコードされた日本語文字列をすべて置換
+
 ## 2026-04-24 — Phase E1: [locale] セグメント移行完了
 
 ### ページ移動

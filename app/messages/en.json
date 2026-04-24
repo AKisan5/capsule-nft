@@ -1,9 +1,289 @@
 {
-  "common": {},
-  "login": {},
-  "my": {},
-  "create": {},
-  "capsule": {},
-  "header": {},
-  "errors": {}
+  "common": {
+    "next": "Next",
+    "back": "Back",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "optional": "Optional",
+    "required": "Required",
+    "or": "or"
+  },
+  "header": {
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "balance": "{amount} SUI"
+  },
+  "login": {
+    "title": "Capsule",
+    "tagline": "Preserve your moments, forever.",
+    "connectButton": "Connect Wallet",
+    "supportedWallets": "Supports: Sui Wallet / Suiet / Slush / Ethos"
+  },
+  "home": {
+    "hero": "Turn the moments that moved you into on-chain memories, in your own words.",
+    "cta": "Create a Capsule",
+    "login": "Log in"
+  },
+  "my": {
+    "title": "My Capsules",
+    "capsuleCountFull": "{count} capsules · {views} total views · avg {rate}% resonated",
+    "newCapsule": "New",
+    "empty": "No capsules yet",
+    "emptyDesc": "Seal your first moment into a capsule",
+    "emptyCta": "Create one",
+    "fetchError": "Failed to load capsules",
+    "reload": "Reload",
+    "untitledEvent": "Untitled Event"
+  },
+  "create": {
+    "stepLabels": {
+      "photo": "Photo",
+      "step1": "Moment",
+      "step2": "Feeling",
+      "step3": "Memo",
+      "review": "Review"
+    },
+    "photo": {
+      "title": "The Photo",
+      "description": "Upload the one image that captures the moment that moved you",
+      "tapToSelect": "Tap to select",
+      "orDragDrop": "or drag & drop",
+      "changePhoto": "Choose a different photo",
+      "eventLabel": "Event name",
+      "eventPlaceholder": "e.g., ONE 170",
+      "fighterLabel": "Fighter tag",
+      "fighterPlaceholder": "e.g., Takeru",
+      "uploading": "Uploading…",
+      "nextButton": "Next — record the moment",
+      "errors": {
+        "imageOnly": "Please select an image file",
+        "noPhoto": "Please choose a photo",
+        "noEvent": "Please enter the event name",
+        "noFighter": "Please enter the fighter tag"
+      }
+    },
+    "step1": {
+      "title": "Which moment in this photo\nmoved you?",
+      "subcategoryLabel": "Specifically which scene? (select any)",
+      "freeTextLabel": "What, specifically?",
+      "freeTextPlaceholder": "What about that scene hit you, and why — write it in your own words",
+      "blankWarning": "Whitespace-only text doesn't count",
+      "nextButton": "Next — capture the feeling",
+      "categories": {
+        "entrance": "Walk-out & Ceremony",
+        "fight": "Fight Progression",
+        "ending": "Outcome",
+        "afterFight": "Post-fight",
+        "uneasy": "Unease & Unresolved"
+      },
+      "subcategories": {
+        "entranceMusic": "Walk-out music",
+        "entranceFace": "Expression & presence",
+        "costume": "Costume & gear",
+        "cornerTalk": "Corner exchanges",
+        "faceOff": "Face-off energy",
+        "strategyShift": "Strategy shifts between rounds",
+        "decisiveMove": "A decisive technique",
+        "endurance": "A moment of endurance",
+        "secondVoice": "Words from the corner",
+        "crowdInteraction": "Crowd interaction",
+        "outcome": "How the fight ended",
+        "reaction": "How they received the result",
+        "handshake": "Handshake with the opponent",
+        "decision": "Reaction to the judges' decision",
+        "interview": "Post-fight interview",
+        "embrace": "Embrace with family or corner",
+        "loserGrace": "How the loser carried themselves",
+        "emotionBurst": "How emotion poured out",
+        "unsatisfied": "A decision that didn't sit right",
+        "unexpected": "An unexpected turn",
+        "unclear": "Something you couldn't read",
+        "indescribable": "Something still beyond words"
+      }
+    },
+    "step2": {
+      "step1Summary": "What you wrote in Step 1",
+      "polarityTitle": "Which direction did the feeling go?",
+      "polarityHint": "Closer to positive, or closer to negative?",
+      "polarity": {
+        "positive": "✦ Positive",
+        "negative": "◆ Negative"
+      },
+      "subcategoryTitle": "Narrow it down a bit more",
+      "subcategoryHint": "Pick the one that fits best out of four types",
+      "subcategoryPositive": {
+        "empathy": {
+          "label": "Empathy",
+          "description": "Connects to something you already know or love",
+          "prompt": "What in your own experience or taste does this connect to?"
+        },
+        "surprise": {
+          "label": "Surprise",
+          "description": "An unexpected turn or a genuinely new discovery",
+          "prompt": "What felt new to you?"
+        }
+      },
+      "subcategoryNegative": {
+        "unpleasant": {
+          "label": "Unpleasant",
+          "description": "Something felt off — a nagging or uncomfortable feeling",
+          "prompt": "Why did it feel that way?"
+        },
+        "boring": {
+          "label": "Boring",
+          "description": "Left you wanting more — didn't live up to expectations",
+          "prompt": "Why did it feel that way?"
+        }
+      },
+      "connectionHint": "This is the foundation your memo in the next step will build on",
+      "connectionPlaceholder": "Whatever comes to mind. Fragments and bullet points are fine.",
+      "nextButton": "Next — write the memo"
+    },
+    "step3": {
+      "summaryStep1": "Step 1 — Moment",
+      "summaryStep2": "Step 2 — Feeling",
+      "title": "Write it down in your own words.",
+      "instruction": "Any way you want. Messy is fine. 'Damn, just damn' is a valid sentence.\nWhat matters is finishing the thought.",
+      "eventLabel": "Which event?",
+      "eventPlaceholder": "ONE Fight Night 25",
+      "fighterLabel": "Which fighter?",
+      "fighterPlaceholder": "Takeru, Stamp…",
+      "memoPlaceholder": "e.g., In that moment I got chills. I can't fully put it into words yet, but something shifted when I saw that right straight. It's hard to say, but this much I know——",
+      "charRemaining": "{count} more characters",
+      "charDone": "✓ Ready to finish",
+      "charCount": "{count} chars",
+      "finishButton": "I'm done"
+    },
+    "review": {
+      "confirmTitle": "Review your capsule",
+      "confirmHint": "Check everything before you mint",
+      "step1Label": "Step 1 — Moment",
+      "step2Label": "Step 2 — Feeling",
+      "step3Label": "Step 3 — Memo",
+      "warningP1": "This capsule will seal your words.",
+      "warningP2": "Once you mint, Steps 1–3 become permanent and immutable.",
+      "warningP3": "This is your honest voice about this moment, carved into history.",
+      "warningP4": "Confirm it before you see anyone else's take.",
+      "walletConnected": "Wallet connected",
+      "demoMode": "Demo mode",
+      "demoModeDesc": "— minting to devnet without login",
+      "holdSealing": "Sealing",
+      "holdProgress": "{percent}%",
+      "holdPrompt": "Hold to mint",
+      "holdHint": "Hold for 2 seconds to confirm",
+      "minting": "Carving into the blockchain…",
+      "faucetLink": "Get SUI from testnet faucet →",
+      "mintErrorUnknown": "An unknown error occurred",
+      "success": {
+        "title": "Capsule complete!",
+        "description": "Your moment is now preserved on the Sui blockchain forever.",
+        "copyId": "Copy Object ID",
+        "copied": "Copied",
+        "viewExplorer": "View on Explorer",
+        "myPage": "Go to My Page",
+        "newCapsule": "Create another capsule"
+      }
+    }
+  },
+  "capsule": {
+    "rawMemoToggle": "Show raw words",
+    "rawMemoHide": "Hide raw words",
+    "step1Label": "Step 1 — Moment",
+    "step2Label": "Step 2 — Feeling",
+    "step3Label": "Step 3 — Raw memo",
+    "copyUrl": "Copy URL",
+    "urlCopied": "Copied",
+    "translating": "Preparing translation…",
+    "translateFailed": "Translation failed",
+    "translateFailedDesc": "Read the raw memo directly instead",
+    "mintedOn": "Minted on {date}",
+    "creator": "Created by:",
+    "share": "Share",
+    "shareCopied": "Copied",
+    "viewExplorer": "Explorer",
+    "viewCapsule": "View capsule",
+    "close": "Close",
+    "mintSuccess": {
+      "title": "Capsule complete!",
+      "description": "Your moment is now preserved on the Sui blockchain forever."
+    },
+    "profileModal": {
+      "title": "Before you open the capsule",
+      "description": "Tell us a little about yourself.\nWe'll translate this moment to match your perspective.",
+      "q1": "How well do you know {fighter}?",
+      "q2": "What's your impression of {fighter}?",
+      "q3": "Your MMA / ONE Championship knowledge?",
+      "q4": "One-line intro",
+      "selfIntroPlaceholder": "e.g., Based in Thailand, trained in Muay Thai. Been following {fighter} for years.",
+      "submitButton": "Open the capsule",
+      "fighterKnowledge": {
+        "1": { "label": "Never heard of them",   "desc": "First time hearing the name today" },
+        "2": { "label": "Know the name",         "desc": "Don't know much about them" },
+        "3": { "label": "Seen some fights",      "desc": "Watched a few times" },
+        "4": { "label": "Follow their career",   "desc": "Keep up with recent fights" },
+        "5": { "label": "Know them inside out",  "desc": "Records, style, the works" }
+      },
+      "fighterImpression": {
+        "1": { "label": "Indifferent",      "desc": "No particular interest" },
+        "2": { "label": "A bit curious",    "desc": "Want to know more" },
+        "3": { "label": "Interested",       "desc": "Will keep an eye on them" },
+        "4": { "label": "Rooting for them", "desc": "Care about how they do" },
+        "5": { "label": "Big fan",          "desc": "Following them closely" }
+      },
+      "mmaKnowledge": {
+        "1": { "label": "First time",       "desc": "Barely know combat sports" },
+        "2": { "label": "A little",         "desc": "Watch occasionally" },
+        "3": { "label": "Watch regularly",  "desc": "Check fights often" },
+        "4": { "label": "Know it well",     "desc": "Up on rules and fighters" },
+        "5": { "label": "Expert level",     "desc": "Follow technique and history" }
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Capsule Details",
+    "tierChartTitle": "Reactions by viewer tier",
+    "tierRateTitle": "Resonance rate by tier",
+    "noFeedback": "No feedback yet",
+    "statViews": "Reactions",
+    "statViewsSub": "total feedback",
+    "statRate": "Resonated",
+    "statRateSub": "{count} responses",
+    "statNoData": "No data",
+    "statMintDate": "Minted",
+    "patternTitle": "Patterns learned from this capsule",
+    "effectiveExpressions": "What worked",
+    "ineffectiveVocabulary": "What didn't land",
+    "feedbackCount": "Feedback details ({count})",
+    "rawMemoTitle": "Raw memo",
+    "shareTitle": "Share link",
+    "openLink": "Open",
+    "accessDenied": "You don't have access to this capsule",
+    "backToMy": "Back to My Capsules",
+    "decoding": {
+      "pending": "Decrypting…",
+      "noBlob": "No text",
+      "failed": "Decryption failed"
+    },
+    "tiers": {
+      "beginner": "Beginners",
+      "intermediate": "Intermediate",
+      "hardcore": "Hardcore"
+    },
+    "outcomes": {
+      "communicated": "It resonated",
+      "wantMore": "Want to know more",
+      "different": "Different read"
+    }
+  },
+  "errors": {
+    "walletNotConnected": "Wallet not connected",
+    "mintFailed": "Mint failed: {reason}",
+    "uploadFailed": "Upload failed",
+    "networkMismatch": "Wrong network. Please switch to Devnet/Testnet.",
+    "insufficientGas": "Not enough gas"
+  }
 }

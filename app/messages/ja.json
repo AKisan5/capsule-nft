@@ -1,9 +1,289 @@
 {
-  "common": {},
-  "login": {},
-  "my": {},
-  "create": {},
-  "capsule": {},
-  "header": {},
-  "errors": {}
+  "common": {
+    "next": "次へ",
+    "back": "戻る",
+    "submit": "送信する",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "retry": "再試行",
+    "optional": "任意",
+    "required": "必須",
+    "or": "または"
+  },
+  "header": {
+    "connect": "接続する",
+    "disconnect": "切断",
+    "balance": "{amount} SUI"
+  },
+  "login": {
+    "title": "Capsule",
+    "tagline": "あなたの感動を、永久に。",
+    "connectButton": "ウォレットで接続する",
+    "supportedWallets": "対応: Sui Wallet / Suiet / Slush / Ethos"
+  },
+  "home": {
+    "hero": "心が震えた瞬間を、あなたの言葉でオンチェーンに。",
+    "cta": "カプセルを作る",
+    "login": "ログイン"
+  },
+  "my": {
+    "title": "マイカプセル",
+    "capsuleCountFull": "{count} 個 · 計 {views} 閲覧 · 平均伝達率 {rate}%",
+    "newCapsule": "新規作成",
+    "empty": "カプセルがありません",
+    "emptyDesc": "初めての感動をカプセルに封じましょう",
+    "emptyCta": "作成する",
+    "fetchError": "カプセルの取得に失敗しました",
+    "reload": "再読み込み",
+    "untitledEvent": "無題イベント"
+  },
+  "create": {
+    "stepLabels": {
+      "photo": "写真",
+      "step1": "瞬間",
+      "step2": "感情",
+      "step3": "メモ",
+      "review": "確認"
+    },
+    "photo": {
+      "title": "あの瞬間の写真",
+      "description": "心が震えた瞬間を切り取った一枚をアップロード",
+      "tapToSelect": "タップして選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "changePhoto": "別の写真を選ぶ",
+      "eventLabel": "イベント名",
+      "eventPlaceholder": "例: ONE 170",
+      "fighterLabel": "ファイタータグ",
+      "fighterPlaceholder": "例: Takeru",
+      "uploading": "アップロード中…",
+      "nextButton": "次へ — 瞬間を記録",
+      "errors": {
+        "imageOnly": "画像ファイルを選択してください",
+        "noPhoto": "写真を選択してください",
+        "noEvent": "イベント名を入力してください",
+        "noFighter": "ファイタータグを入力してください"
+      }
+    },
+    "step1": {
+      "title": "この写真の、どの瞬間が\n心を動かされた?",
+      "subcategoryLabel": "具体的にどの場面? (複数選択可)",
+      "freeTextLabel": "具体的に何が?",
+      "freeTextPlaceholder": "あのシーンのどこが、なぜ心に刺さったか — 自分の言葉で書いてください",
+      "blankWarning": "空白のみは入力とみなされません",
+      "nextButton": "次へ — 感情を記録",
+      "categories": {
+        "entrance": "入場・セレモニー",
+        "fight": "試合の展開",
+        "ending": "結末",
+        "afterFight": "試合後",
+        "uneasy": "違和感・モヤモヤ"
+      },
+      "subcategories": {
+        "entranceMusic": "入場曲",
+        "entranceFace": "表情・佇まい",
+        "costume": "衣装",
+        "cornerTalk": "コーナーやりとり",
+        "faceOff": "フェイスオフ",
+        "strategyShift": "ラウンド戦略の変化",
+        "decisiveMove": "決定的な技",
+        "endurance": "耐えた瞬間",
+        "secondVoice": "セコンドの声かけ",
+        "crowdInteraction": "観客との相互作用",
+        "outcome": "勝敗の決まり方",
+        "reaction": "勝利/敗北の受け止め",
+        "handshake": "相手選手との握手",
+        "decision": "判定への反応",
+        "interview": "インタビュー",
+        "embrace": "家族・セコンドとの抱擁",
+        "loserGrace": "敗者の振る舞い",
+        "emotionBurst": "感情の爆発",
+        "unsatisfied": "納得いかなかった判定",
+        "unexpected": "期待と違った展開",
+        "unclear": "理解できなかった演出",
+        "indescribable": "まだ言葉にできない"
+      }
+    },
+    "step2": {
+      "step1Summary": "Step 1 の記録",
+      "polarityTitle": "その感情の向きは?",
+      "polarityHint": "プラスとマイナス、どちらに近かったですか",
+      "polarity": {
+        "positive": "✦ ポジティブ",
+        "negative": "◆ ネガティブ"
+      },
+      "subcategoryTitle": "その感情をもう少し詳しく",
+      "subcategoryHint": "4 分類のうち、一番近いものを選んでください",
+      "subcategoryPositive": {
+        "empathy": {
+          "label": "共感",
+          "description": "自分の体験・好みと重なる",
+          "prompt": "自分のどんな体験・好みと共通する?"
+        },
+        "surprise": {
+          "label": "驚き",
+          "description": "予想外の展開・新しい発見がある",
+          "prompt": "どこが新しいと感じた?"
+        }
+      },
+      "subcategoryNegative": {
+        "unpleasant": {
+          "label": "不快",
+          "description": "何かが引っかかる・嫌な感覚が残る",
+          "prompt": "なぜそう感じた?"
+        },
+        "boring": {
+          "label": "退屈",
+          "description": "物足りない・期待と違う手応えだった",
+          "prompt": "なぜそう感じた?"
+        }
+      },
+      "connectionHint": "この言葉が次のステップで書くメモの土台になります",
+      "connectionPlaceholder": "思いついたままの言葉で構いません。断片でも、箇条書きでも。",
+      "nextButton": "次へ — メモを書く"
+    },
+    "step3": {
+      "summaryStep1": "Step 1 — 瞬間",
+      "summaryStep2": "Step 2 — 感情",
+      "title": "これを、あなたの言葉でメモにしてください。",
+      "instruction": "書き方は自由。「やばい」のまま書いてもいい。\n大事なのは、最後まで書き終えること。",
+      "eventLabel": "どの大会?",
+      "eventPlaceholder": "ONE Fight Night 25",
+      "fighterLabel": "誰の?",
+      "fighterPlaceholder": "武尊, Stamp…",
+      "memoPlaceholder": "例: あの瞬間、鳥肌が立った。まだ整理できないけど、あの右ストレートを見た瞬間に何かが変わった気がした。言葉にするのは難しいけれど、これだけは言える——",
+      "charRemaining": "あと {count} 文字",
+      "charDone": "✓ 書き終えられます",
+      "charCount": "{count} 文字",
+      "finishButton": "書き終えた"
+    },
+    "review": {
+      "confirmTitle": "カプセルを確認",
+      "confirmHint": "内容を確認してからミントしてください",
+      "step1Label": "Step 1 — 瞬間",
+      "step2Label": "Step 2 — 感情",
+      "step3Label": "Step 3 — メモ",
+      "warningP1": "このカプセルには、あなたの言葉が封じられます。",
+      "warningP2": "ミントすると Step 1–3 の中身は永久に不変になります。",
+      "warningP3": "これが「この試合に対する、この瞬間のあなたの本音」として歴史に刻まれます。",
+      "warningP4": "他人の感想を見る前に、確定させましょう。",
+      "walletConnected": "ウォレット接続済み",
+      "demoMode": "デモモード",
+      "demoModeDesc": "— ログインなしで devnet にミントします",
+      "holdSealing": "封印中",
+      "holdProgress": "{percent}%",
+      "holdPrompt": "押し続けてミント",
+      "holdHint": "2 秒間長押しで確定",
+      "minting": "ブロックチェーンに刻んでいます…",
+      "faucetLink": "テストネット Faucet で SUI を取得 →",
+      "mintErrorUnknown": "不明なエラーが発生しました",
+      "success": {
+        "title": "カプセル完成！",
+        "description": "あなたの感動が Sui チェーンに永久保存されました",
+        "copyId": "Object ID をコピー",
+        "copied": "コピーしました",
+        "viewExplorer": "Explorer で確認",
+        "myPage": "マイページへ",
+        "newCapsule": "新しいカプセルを作る"
+      }
+    }
+  },
+  "capsule": {
+    "rawMemoToggle": "原液メモを見る",
+    "rawMemoHide": "原液メモを隠す",
+    "step1Label": "Step 1 — 瞬間",
+    "step2Label": "Step 2 — 感情",
+    "step3Label": "Step 3 — 原液メモ",
+    "copyUrl": "URLをコピー",
+    "urlCopied": "コピーしました",
+    "translating": "翻訳を準備中…",
+    "translateFailed": "翻訳に失敗しました",
+    "translateFailedDesc": "原液メモを直接ご覧ください",
+    "mintedOn": "{date} にミント",
+    "creator": "作成者:",
+    "share": "シェア",
+    "shareCopied": "コピー済み",
+    "viewExplorer": "Explorer",
+    "viewCapsule": "カプセルを見る",
+    "close": "閉じる",
+    "mintSuccess": {
+      "title": "カプセル完成！",
+      "description": "あなたの感動が Sui チェーンに永久保存されました"
+    },
+    "profileModal": {
+      "title": "カプセルを開く前に",
+      "description": "あなたのことを教えてください。\nあなたの目線に合わせてこの瞬間を翻訳します。",
+      "q1": "{fighter}についての知識量",
+      "q2": "{fighter}への印象",
+      "q3": "ONE Championship / MMA 全般の知識",
+      "q4": "一言自己紹介",
+      "selfIntroPlaceholder": "例: タイ在住、ムエタイ経験あり。{fighter}の試合を追いかけています。",
+      "submitButton": "カプセルを開ける",
+      "fighterKnowledge": {
+        "1": { "label": "全く知らない",       "desc": "今日初めて名前を聞いた" },
+        "2": { "label": "名前は知っている",   "desc": "どんな選手かは知らない" },
+        "3": { "label": "試合を見たことある", "desc": "何度か見たことがある" },
+        "4": { "label": "よく追いかけている", "desc": "最近の試合はだいたい把握" },
+        "5": { "label": "熟知している",       "desc": "戦績・スタイルまで詳しい" }
+      },
+      "fighterImpression": {
+        "1": { "label": "無関心",       "desc": "特に関心はない" },
+        "2": { "label": "少し気になる", "desc": "もう少し知りたい" },
+        "3": { "label": "興味がある",   "desc": "今後も注目したい" },
+        "4": { "label": "応援している", "desc": "試合結果が気になる" },
+        "5": { "label": "大ファン",     "desc": "追いかけ続けている" }
+      },
+      "mmaKnowledge": {
+        "1": { "label": "初めて見た",     "desc": "格闘技はほぼ知らない" },
+        "2": { "label": "少し知っている", "desc": "たまに見ることがある" },
+        "3": { "label": "よく観る",       "desc": "試合はよくチェックしている" },
+        "4": { "label": "詳しい",         "desc": "ルールや選手をよく知っている" },
+        "5": { "label": "マニア",         "desc": "技術・歴史まで追いかけている" }
+      }
+    }
+  },
+  "dashboard": {
+    "title": "カプセル詳細",
+    "tierChartTitle": "閲覧者層別リアクション",
+    "tierRateTitle": "層別 伝わった率",
+    "noFeedback": "まだフィードバックがありません",
+    "statViews": "リアクション数",
+    "statViewsSub": "フィードバック計",
+    "statRate": "伝わった率",
+    "statRateSub": "{count} 件",
+    "statNoData": "データなし",
+    "statMintDate": "ミント日",
+    "patternTitle": "このカプセルから学んだパターン",
+    "effectiveExpressions": "効いた表現",
+    "ineffectiveVocabulary": "響かなかった語彙",
+    "feedbackCount": "フィードバック詳細 ({count}件)",
+    "rawMemoTitle": "原液メモ",
+    "shareTitle": "共有リンク",
+    "openLink": "開く",
+    "accessDenied": "このカプセルにはアクセスできません",
+    "backToMy": "マイカプセルに戻る",
+    "decoding": {
+      "pending": "復号中…",
+      "noBlob": "テキストなし",
+      "failed": "復号できませんでした"
+    },
+    "tiers": {
+      "beginner": "初心者",
+      "intermediate": "中級者",
+      "hardcore": "上級者"
+    },
+    "outcomes": {
+      "communicated": "伝わった",
+      "wantMore": "もっと知りたい",
+      "different": "違う解釈"
+    }
+  },
+  "errors": {
+    "walletNotConnected": "ウォレットが接続されていません",
+    "mintFailed": "ミントに失敗しました: {reason}",
+    "uploadFailed": "アップロードに失敗しました",
+    "networkMismatch": "ネットワークが違います。Devnet/Testnet に切り替えてください",
+    "insufficientGas": "ガス代が不足しています"
+  }
 }
