@@ -18,8 +18,8 @@
     "balance": "{amount} SUI"
   },
   "login": {
-    "title": "Capsule",
-    "tagline": "Preserve your moments, forever.",
+    "title": "Moment Capsule",
+    "tagline": "Capture the moment. Seal your feeling.",
     "connectButton": "Connect Wallet",
     "supportedWallets": "Supports: Sui Wallet / Suiet / Slush / Ethos"
   },

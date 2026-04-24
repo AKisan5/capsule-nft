@@ -28,10 +28,10 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'home' });
   return {
-    title: 'Capsule — ONE Championship Moment Vault',
+    title: 'Moment Capsule — ONE Championship Moment Vault',
     description: t('metaDescription'),
     openGraph: {
-      title: 'Capsule',
+      title: 'Moment Capsule',
       description: 'Mint your ONE Championship moment on Sui.',
       type: 'website',
     },

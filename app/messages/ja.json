@@ -18,8 +18,8 @@
     "balance": "{amount} SUI"
   },
   "login": {
-    "title": "Capsule",
-    "tagline": "あなたの感動を、永久に。",
+    "title": "Moment Capsule",
+    "tagline": "一瞬を写し、感情を封じる。",
     "connectButton": "ウォレットで接続する",
     "supportedWallets": "対応: Sui Wallet / Suiet / Slush / Ethos"
   },

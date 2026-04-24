@@ -15,7 +15,7 @@ export function Header() {
           href="/"
           className="text-sm font-bold tracking-tight hover:text-primary transition-colors"
         >
-          Capsule
+          Moment Capsule
         </Link>
         <div className="flex items-center gap-3">
           <LocaleSwitcher />
